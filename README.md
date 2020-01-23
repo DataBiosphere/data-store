@@ -3,8 +3,7 @@
 [![Build Status](https://travis-ci.com/DataBiosphere/data-store.svg?branch=master)](https://travis-ci.com/DataBiosphere/data-store)
 [![codecov](https://codecov.io/gh/DataBiosphere/data-store/branch/master/graph/badge.svg)](https://codecov.io/gh/DataBiosphere/data-store)
 
-This repository maintains the data storage system of the
-[Human Cell Atlas](https://www.humancellatlas.org/). We use this
+This repository maintains the data storage system. We use this
 [Google Drive folder](https://drive.google.com/open?id=0B-_4IWxXwazQbWE5YmtqUWx3RVE) for design docs and
 meeting notes, and [this Zenhub board](https://app.zenhub.com/workspace/o/humancellatlas/data-store) to track our GitHub work.
 
@@ -74,41 +73,73 @@ to review and edit the API specification. When the API is live, the spec is also
 In this section, you'll configure and deploy a development version of the DSS, consisting of a local API server and
 a suite of cloud services.
 
-Note that this requires 
-privileged access to cloud accounts (AWS, GCP, etc.) is required to deploy the data-store. IF your deployment fails
-due to access restrictions, please consult your local systems administrators.
-
-Also note that all commands given in this Readme should be run from the root of this repository after sourcing the
+All commands given in this Readme should be run from the root of this repository after sourcing the
 correct environment (see the [Configuration](#configuration) section below). The root directory of the repository
 is also available in the environment variable `$DSS_HOME`.
 
-### Install Dependencies
+**NOTE:** Deploying the data store requires privileged access to cloud accounts (AWS, GCP, etc.).
+If your deployment fails due to access restrictions, please consult your local system administrators.
 
-The DSS requires Python 3.6 to run.
+The first step to get started with the data store is to clone this repository:
 
-Clone the repo and install dependencies:
 ```
 git clone git@github.com:HumanCellAtlas/data-store.git
 cd data-store
+```
+
+### Install Python Dependencies
+
+The DSS requires Python 3.6+ to run. The file `requirements.txt` contains Python dependencies for those running a data store,
+and `requirements-dev.txt` contains Python dependencies for those developing code for the data store. Once this
+repository has been cloned, use pip to install the Python dependencies:
+
+```
 pip install -r requirements-dev.txt
 ```
 
-Also install [terraform from Hashicorp](https://www.terraform.io/) from your favourite package manager.
+### Install AWS and GCP CLI Tools
+
+To interact with AWS and GCP from the command line, use the officially distributed CLI tools.
+
+The `aws` CLI tool can be installed via `pip install awscli` (or any other method covered in the
+[aws-cli repository Readme](https://github.com/aws/aws-cli#installation)).
+
+The `gcloud` CLI tool should be installed directly from Google Cloud. Their `gcloud`
+[Quickstarts](https://cloud.google.com/sdk/docs/quickstarts/) page contains installation instructions for different
+operating systems, including Mac and Linux.
+
+### Install Terraform
+
+[Terraform](https://www.terraform.io), a tool From Hasicorp, should also be [downloaded from
+terraform.io](https://www.terraform.io/downloads.html) and the binary moved somewhere on your `$PATH`.
+
+**NOTE:** The Dockerfile for the CI/CD test cluster, [`allspark.Dockerfile`](allspark.Dockerfile), also contains
+commands that download and install a specific version terraform.
 
 ### Configuration
 
-The DSS is configured via environment variables. The required environment variables and their default values
-are defined in the file [`environment`](environment). To customize the values of these environment variables:
+The DSS is configured via environment variables. 
+
+The file [`environment`](environment) sets default values for all variables used in the data store.
+To customize the values of these environment variables:
 
 1. Copy `environment.local.example` to `environment.local`
 1. Edit `environment.local` to add custom entries that override the default values in `environment`
 1. Run `source environment`  now and whenever these environment files are modified.
 
-The full list of configurable environment variables and their descriptions are documented [here](docs/environment/README.md).
+When the user runs `source environment`, it will execute the entire `environment` file, setting each variable to its
+default value; then `environment` will source `environment.local`, overwriting the default values with the new
+values defined in `environment.local`.
+
+The full list of configurable environment variables and their descriptions is [here](docs/environment/README.md).
 
 #### Configure Terraform
 
-The DSS uses the [Amazon S3 backend](https://www.terraform.io/docs/backends/types/s3.html) for Terraform-deployed resources. To run deployment, make sure that the requisite bucket exists. The bucket is named after `$DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE`, by default `org-humancellatlas-{account_id}-terraform` with `{account_id}` substituted with your AWS account ID.
+The DSS uses Terraform's [Amazon S3 backend](https://www.terraform.io/docs/backends/types/s3.html) for deployment.
+
+Terraform uses an S3 bucket to store configuration files. The Terraform bucket must exist before the deployment
+process begins - Terraform cannot create this bucket itself. The bucket is named via the variable
+`$DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE`.
 
 #### Configure AWS
 
