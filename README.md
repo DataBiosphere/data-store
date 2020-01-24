@@ -137,7 +137,7 @@ See the file `common.mk` for more information.
 
 #### Configure Data Store
 
-The DSS is configured via environment variables. 
+The DSS is configured via environment variables.
 
 The file [`environment`](environment) sets default values for all variables used in the data store.  The file
 [`environment.local`](environment.local) overrides default values with custom entries. To customize the
@@ -277,10 +277,14 @@ To manually create the utility service account:
 1. In the [Google Cloud Console](https://console.cloud.google.com/), select the correct Google user account on the top
    right and the correct GCP project in the drop down in the top center. Go to "IAM & Admin", then "Service accounts".
 
-1. Click "Create service account" and select "Furnish a new private key". Under "Roles", select
-   a) "Project – Owner",
-   a) "Service Accounts – Service Account User"
-   a) "Cloud Functions – Cloud Function Developer".
+1. Click "Create service account" and select "Furnish a new private key". Under "Roles", select the following
+   roles:
+
+   a) "Project – Owner"
+
+   b) "Service Accounts – Service Account User"
+
+   c) "Cloud Functions – Cloud Function Developer"
 
 1. Create the account and download the service account key JSON file.
 
@@ -294,18 +298,20 @@ account:
     variable `DSS_GCP_SERVICE_ACCOUNT_NAME`.
 
 1.  Create the Google Cloud Platform service account using the command
+
     ```
     make -C infra COMPONENT=gcp_service_account apply
     ```
+
     This step can be skipped if you're rotating credentials.
 
-1.  The prior command will download a JSON file. Place the downloaded JSON file into the project root as 
+1.  The prior command will download a JSON file. Place the downloaded JSON file into the project root as
     `gcp-credentials.json`
 
 1.  Store the deployment service account credentials in the AWS Secrets Manager:
 
     ```
-    ### WARNING: RUNNING THIS COMMAND WILL 
+    ### WARNING: RUNNING THIS COMMAND WILL
     ###          CLEAR EXISTING SECRET VALUE
     cat $DSS_HOME/gcp-credentials.json | ./scripts/dss-ops.py secrets set --force $GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME
     ```
@@ -314,31 +320,33 @@ account:
 
 Set admin account emails within AWS Secret Manager:
 
-    ```
-    ### WARNING: RUNNING THIS COMMAND WILL 
+    ### WARNING: RUNNING THIS COMMAND WILL
     ###          CLEAR EXISTING SECRET VALUE
     echo -n 'user1@example.com,user2@example.com' |  ./scripts/dss-ops.py secrets set --force $ADMIN_USER_EMAILS_SECRETS_NAME
-    ```
 
 ### Deploying the DSS
 
 Assuming the tests have passed above, the next step is to manually deploy. See the section below for information on
 CI/CD with Travis if continuous deployment is your goal.
 
-Several components in the DSS deployed separately as daemons, found in `$DSS_HOME/daemons`. Daemon deployment may
-incorporate dependent infrastructure, such SQS queues or SNS topics, by placing Terraform files in daemon directory, e.g.
-`$DSS_HOME/daemons/dss-admin/my_queue_defs.tf`. This infrastructure is deployed non-interactively, without the
-usual plan/review Terraform workflow, and should therefore be lightweight in nature. Large infrastructure should be
-added to `$DSS_HOME/infra` instead.
+Several components in the DSS are deployed separately as daemons, found in `$DSS_HOME/daemons`. Daemon deployment may
+be dependent on infrastructure being deployed, such SQS queues or SNS topics. This infrastructure can be handled by placing
+Terraform files in the daemon directory, e.g., `$DSS_HOME/daemons/dss-admin/my_queue_defs.tf`. This infrastructure is
+deployed non-interactively, without the usual Terraform workflow of planning and reviewing. Therefore it should be
+lightweight in nature.
+
+More complex or larger infrastructure should be added to `$DSS_HOME/infra` instead of the daemon infrastructure
+whenever possible.
 
 ##### Resources
 
-Cloud resources have the potential for naming collision in both [AWS](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
- and [GCP](https://cloud.google.com/storage/docs/naming), ensure that you rename resources as needed.
+Both [AWS](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) and
+[GCP](https://cloud.google.com/storage/docs/naming) use global namespaces shared amongst all
+users, so ensure that you name your resources appropriately to avoid name collisions.
 
 #### Buckets
 
-Buckets within AWS and GCP need to be available for use by the DSS. Use Terraform to setup these resources:
+Buckets within AWS and GCP need to be available for use by the DSS. Use Terraform to set up the buckets:
 
 ```
 make -C infra COMPONENT=buckets plan
@@ -348,14 +356,14 @@ make -C infra COMPONENT=buckets apply
 #### ElasticSearch
 
 The AWS Elasticsearch Service is used for metadata indexing. Currently the DSS uses version 5.5 of ElasticSearch. For typical development deployments the
-t2.small.elasticsearch instance type is sufficient. Use the [`DSS_ES_`](./docs/environment/README.md) variables to adjust the cluster as needed. 
+t2.small.elasticsearch instance type is sufficient. Use the [`DSS_ES_`](./docs/environment/README.md) variables to adjust the cluster as needed.
 
 Add allowed IPs for ElasticSearch to the secret manager, use comma separated IPs:
 
 ```
-### WARNING: RUNNING THIS COMMAND WILL 
+### WARNING: RUNNING THIS COMMAND WILL
 ###          CLEAR EXISTING SECRET VALUE
-echo -n '1.1.1.1,2.2.2.2' | ./scripts/dss-ops.py secret set --force $ES_ALLOWED_SOURCE_IP_SECRETS_NAME
+echo -n '1.1.1.1,2.2.2.2' | ./scripts/dss-ops.py secrets set --force $ES_ALLOWED_SOURCE_IP_SECRETS_NAME
 ```
 
 Use Terraform to deploy ES resource:
