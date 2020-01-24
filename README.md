@@ -189,7 +189,7 @@ GCP. Here are the steps:
 
 1. For *Application type* choose *Other*
 
-1. Under application name, use `hca-dss-` followed by the stage name (i.e. the value of `DSS_DEPLOYMENT_STAGE`.. This
+1. Under application name, use `${DSS_PLATFORM}-dss-` followed by the stage name (i.e. the value of `DSS_DEPLOYMENT_STAGE`.. This
 is a convention only and carries no technical significance.
 
 1. Click *Create*, don't worry about noting the client ID and secret, click *OK*
@@ -198,15 +198,16 @@ is a convention only and carries no technical significance.
 
 1. Place the downloaded JSON file into the project root as `application_secrets.json`
 
-1. Run the command
+1. Run the following command to store `application_secrets.json` in the AWS Secrets Manager
+   (to make it available later during the deployment process)
 
    ```
    ### WARNING: RUNNING THIS COMMAND WILL
    ###          CLEAR EXISTING SCRET VALUE
-   cat $DSS_HOME/application_secrets.json | ./scripts/dss-ops.py secrets set --secret-name $GOOGLE_APPLICATION_SECRETS_SECRETS_NAME
+   cat $DSS_HOME/application_secrets.json | ./scripts/dss-ops.py secrets set --force $GOOGLE_APPLICATION_SECRETS_SECRETS_NAME
    ```
 
-Next, configure the gcloud command line utility with the following steps:
+Next, configure the `gcloud` command line utility with the following steps:
 
 1.  Choose a region that has support for Cloud Functions and set `GCP_DEFAULT_REGION` to that region. See
     [the GCP locations list](https://cloud.google.com/about/locations/) for a list of supported regions.
@@ -264,24 +265,33 @@ Run `./dss-api` in the top-level `data-store` directory to deploy the DSS API on
 
 ### Acquiring GCP credentials
 
-When deploying for the first time, a Google Cloud Platform service account must first be created and credentialed.
+We use Terraform to automatically create a Google Cloud service account (referred to as the "deployment service account")
+to deploy Google Cloud infrastructure.
 
-1.  Specify the name of the Google Cloud Platform service account in `environment.local` using the variable
-    `DSS_GCP_SERVICE_ACCOUNT_NAME`.
+When deploying for the first time, we need to manually create a (different) service account (referred to as the
+"utility service account") that Terraform can utilize to create the deployment service account. The utility service
+account is only used once, during the first deployment, to create the deployment service account.
 
-1.  Provision a set of credentials that will allow you to run deployment.
+To manually create the utility service account:
 
-    1) In the [Google Cloud Console](https://console.cloud.google.com/), select the correct Google user account on the top
-       right and the correct GCP project in the drop down in the top center. Go to "IAM & Admin", then "Service accounts".
+1. In the [Google Cloud Console](https://console.cloud.google.com/), select the correct Google user account on the top
+   right and the correct GCP project in the drop down in the top center. Go to "IAM & Admin", then "Service accounts".
 
-    1) Click "Create service account" and select "Furnish a new private key". Under "Roles", select
-       a) "Project – Owner",
-       a) "Service Accounts – Service Account User"
-       a) "Cloud Functions – Cloud Function Developer".
+1. Click "Create service account" and select "Furnish a new private key". Under "Roles", select
+   a) "Project – Owner",
+   a) "Service Accounts – Service Account User"
+   a) "Cloud Functions – Cloud Function Developer".
 
-    1) Create the account and download the service account key JSON file.
+1. Create the account and download the service account key JSON file.
 
-    1) Place the file as `$DSS_HOME/gcp-credentials.json`. You will replace it later.
+1. Place the file as `$DSS_HOME/gcp-credentials.json`. Terraform will use this utility service account credentials
+   file to create the deployment service account.
+
+Now that we have the utility service account credentials, we can use Terraform to create the deployment service
+account:
+
+1.  Specify the name of the Google Cloud deployment service account in `environment.local` using the environment
+    variable `DSS_GCP_SERVICE_ACCOUNT_NAME`.
 
 1.  Create the Google Cloud Platform service account using the command
     ```
@@ -289,25 +299,26 @@ When deploying for the first time, a Google Cloud Platform service account must 
     ```
     This step can be skipped if you're rotating credentials.
 
-1.  Place the downloaded JSON file into the project root as `gcp-credentials.json`
+1.  The prior command will download a JSON file. Place the downloaded JSON file into the project root as 
+    `gcp-credentials.json`
 
-1.  Run the command
+1.  Store the deployment service account credentials in the AWS Secrets Manager:
 
     ```
     ### WARNING: RUNNING THIS COMMAND WILL 
     ###          CLEAR EXISTING SECRET VALUE
-    cat $DSS_HOME/gcp-credentials.json | ./scripts/dss-ops.py secrets set --secret-name $GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME
+    cat $DSS_HOME/gcp-credentials.json | ./scripts/dss-ops.py secrets set --force $GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME
     ```
 
 ### Setting admin emails
 
 Set admin account emails within AWS Secret Manager:
 
-```
-### WARNING: RUNNING THIS COMMAND WILL 
-###          CLEAR EXISTING SECRET VALUE
-echo -n 'user1@example.com,user2@example.com' |  ./scripts/dss-ops.py secrets set --secret-name $ADMIN_USER_EMAILS_SECRETS_NAME
- ```
+    ```
+    ### WARNING: RUNNING THIS COMMAND WILL 
+    ###          CLEAR EXISTING SECRET VALUE
+    echo -n 'user1@example.com,user2@example.com' |  ./scripts/dss-ops.py secrets set --force $ADMIN_USER_EMAILS_SECRETS_NAME
+    ```
 
 ### Deploying the DSS
 
@@ -344,7 +355,7 @@ Add allowed IPs for ElasticSearch to the secret manager, use comma separated IPs
 ```
 ### WARNING: RUNNING THIS COMMAND WILL 
 ###          CLEAR EXISTING SECRET VALUE
-echo -n '1.1.1.1,2.2.2.2' | ./scripts/dss-ops.py secret set --secret-name $ES_ALLOWED_SOURCE_IP_SECRETS_NAME
+echo -n '1.1.1.1,2.2.2.2' | ./scripts/dss-ops.py secret set --force $ES_ALLOWED_SOURCE_IP_SECRETS_NAME
 ```
 
 Use Terraform to deploy ES resource:
