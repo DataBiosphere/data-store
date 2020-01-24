@@ -116,8 +116,8 @@ operating systems.
 [Terraform](https://www.terraform.io), a tool From Hasicorp, should also be [downloaded from
 terraform.io](https://www.terraform.io/downloads.html) and the binary moved somewhere on your `$PATH`.
 
-The data store requires that a specific version of Terraform be used. Check `common.mk` for the specific version
-of Terraform that should be installed.
+The data store requires that a specific version of Terraform be used. Check [`common.mk`](common.mk) for the
+specific version of Terraform that should be installed.
 
 **NOTE:** The Dockerfile for the CI/CD test cluster, [`allspark.Dockerfile`](allspark.Dockerfile), contains
 a set of commands to download and install a specified version of Terraform.
