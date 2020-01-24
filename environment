@@ -122,7 +122,7 @@ DSS_INFRA_TAG_SERVICE="dss"
 
 DSS_INFRA_TAG_OWNER="chmreid@ucsc.edu"
 DSS_NOTIFICATION_SENDER="chmreid@ucsc.edu"
-API_DOMAIN_NAME="dss.${DSS_DEPLOYMENT_STAGE}.chmreid.ucsc-cgp-redwood.org"
+API_DOMAIN_NAME="dss.${DSS_DEPLOYMENT_STAGE}.ucsc-cgp-redwood.org"
 
 TOKENINFO_FUNC=dss.util.security.verify_jwt
 # TODO remove https://dev.data.humancellatlas.org/ from OIDC_AUDIENCE once seperate deployments are made
