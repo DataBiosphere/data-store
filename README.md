@@ -87,7 +87,9 @@ git clone git@github.com:HumanCellAtlas/data-store.git
 cd data-store
 ```
 
-### Install Python Dependencies
+### Install Dependencies
+
+#### Python Dependencies
 
 The DSS requires Python 3.6+ to run. The file `requirements.txt` contains Python dependencies for those running a data store,
 and `requirements-dev.txt` contains Python dependencies for those developing code for the data store. Once this
@@ -97,31 +99,49 @@ repository has been cloned, use pip to install the Python dependencies:
 pip install -r requirements-dev.txt
 ```
 
-### Install AWS and GCP CLI Tools
+#### AWS and GCP CLI Tools
 
 To interact with AWS and GCP from the command line, use the officially distributed CLI tools.
 
 The `aws` CLI tool can be installed via `pip install awscli` (or any other method covered in the
 [aws-cli repository Readme](https://github.com/aws/aws-cli#installation)).
 
-The `gcloud` CLI tool should be installed directly from Google Cloud. Their `gcloud`
-[Quickstarts](https://cloud.google.com/sdk/docs/quickstarts/) page contains installation instructions for different
-operating systems, including Mac and Linux.
+The `gcloud` CLI tool should be installed directly from Google Cloud. Use the [`gcloud`
+Downloads](https://cloud.google.com/sdk/downloads) page to download the latest version.  Use the [`gcloud`
+Quickstarts](https://cloud.google.com/sdk/docs/quickstarts/) page for installation instructions for various
+operating systems.
 
-### Install Terraform
+#### Terraform
 
 [Terraform](https://www.terraform.io), a tool From Hasicorp, should also be [downloaded from
 terraform.io](https://www.terraform.io/downloads.html) and the binary moved somewhere on your `$PATH`.
 
-**NOTE:** The Dockerfile for the CI/CD test cluster, [`allspark.Dockerfile`](allspark.Dockerfile), also contains
-commands that download and install a specific version terraform.
+The data store requires that a specific version of Terraform be used. Check `common.mk` for the specific version
+of Terraform that should be installed.
+
+**NOTE:** The Dockerfile for the CI/CD test cluster, [`allspark.Dockerfile`](allspark.Dockerfile), contains
+a set of commands to download and install a specified version of Terraform.
+
+#### Other Utilities
+
+The data store makes use of a number of other command line utilities that should be present on your system (if they
+are not, `make` commands will fail):
+
+* `jq` - install via `apt-get install jq` or `brew install jq`
+* `sponge` - install via `apt-get install moreutils` or `brew install moreutils`
+* `envsubst` - install via `apt-get install gettext` or `brew install gettext && brew link gettext`
+
+See the file `common.mk` for more information.
 
 ### Configuration
 
+#### Configure Data Store
+
 The DSS is configured via environment variables. 
 
-The file [`environment`](environment) sets default values for all variables used in the data store.
-To customize the values of these environment variables:
+The file [`environment`](environment) sets default values for all variables used in the data store.  The file
+[`environment.local`](environment.local) overrides default values with custom entries. To customize the
+configuration environment variables:
 
 1. Copy `environment.local.example` to `environment.local`
 1. Edit `environment.local` to add custom entries that override the default values in `environment`
@@ -135,67 +155,66 @@ The full list of configurable environment variables and their descriptions is [h
 
 #### Configure Terraform
 
-The DSS uses Terraform's [Amazon S3 backend](https://www.terraform.io/docs/backends/types/s3.html) for deployment.
+The DSS uses Terraform's [AWS S3 backend](https://www.terraform.io/docs/backends/types/s3.html) for deployment.
+This means Terraform will use an AWS S3 bucket to store its configuration files.
 
-Terraform uses an S3 bucket to store configuration files. The Terraform bucket must exist before the deployment
-process begins - Terraform cannot create this bucket itself. The bucket is named via the variable
+Before Terraform is used, the Terraform bucket that will contain the configuration files must be created -
+Terraform will not create this bucket itself. Specify the bucket name using the environment variable
 `$DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE`.
+
+All other buckets will be created by Terraform during the infrastructure deployment step and should not exist
+before deploying for the first time.
 
 #### Configure AWS
 
-1. Follow this [tutorial](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) to install the
-   AWS command line utility and configure your AWS access credentials.
+To configure the AWS CLI:
 
-1. Specify the names of S3 buckets in `environment.local`, using the environment variables `DSS_S3_BUCKET_*`, and verify
-   that `AWS_DEFAULT_REGION` points to your prefered region.
-   These buckets will be created with Terraform, and should not exist before deploying for the first time.
+1. Configure your AWS CLI credentials following the data store [AWS CLI Configuration Guide](docs/aws_cli_config.md).
+
+1. Verify that `AWS_DEFAULT_REGION` points to your prefered AWS region.
+
+1. Specify the names of S3 buckets in `environment.local` using the environment variables `DSS_S3_BUCKET_*`.
+    These buckets will be created by Terraform and should not exist before deploying.
 
 #### Configure GCP
 
-1.  Generate OAuth application secrets to be used for your instance:
+To configure GCP for deployment of infrastructure, start by creating an OAuth application and generating associated
+tokens. These will be stored in the AWS Secrets Manager and used for automated deployment of infrastructure to
+GCP. Here are the steps:
 
-    1) Go to the [GCP API and Service Credentials page](https://console.developers.google.com/apis/credentials). You may have to select Organization and Project again.
+1. Go to the [GCP API and Service Credentials page](https://console.developers.google.com/apis/credentials). You
+   may have to select Organization and Project again.
 
-	1) Click *Create Credentials* and select *OAuth client*
+1. Click *Create Credentials* and select *OAuth client*
 
-	1) For *Application type* choose *Other*
+1. For *Application type* choose *Other*
 
-	1) Under application name, use `hca-dss-` followed by the stage name (i.e. the value of `DSS_DEPLOYMENT_STAGE`). This
-    is a convention only and carries no technical significance.
+1. Under application name, use `hca-dss-` followed by the stage name (i.e. the value of `DSS_DEPLOYMENT_STAGE`.. This
+is a convention only and carries no technical significance.
 
-	1) Click *Create*, don't worry about noting the client ID and secret, click *OK*
+1. Click *Create*, don't worry about noting the client ID and secret, click *OK*
 
-	1) Click the edit icon for the new credentials and click *Download JSON*
+1. Click the edit icon for the new credentials and click *Download JSON*
 
-	1) Place the downloaded JSON file into the project root as `application_secrets.json`
+1. Place the downloaded JSON file into the project root as `application_secrets.json`
 
-	1) Run the command
+1. Run the command
 
-	   ```
-       ### WARNING: RUNNING THIS COMMAND WILL
-       ###          CLEAR EXISTING SCRET VALUE
-	   cat $DSS_HOME/application_secrets.json | ./scripts/dss-ops.py secrets set --secret-name $GOOGLE_APPLICATION_SECRETS_SECRETS_NAME
-       ```
+   ```
+   ### WARNING: RUNNING THIS COMMAND WILL
+   ###          CLEAR EXISTING SCRET VALUE
+   cat $DSS_HOME/application_secrets.json | ./scripts/dss-ops.py secrets set --secret-name $GOOGLE_APPLICATION_SECRETS_SECRETS_NAME
+   ```
 
-1.  [Download](https://cloud.google.com/sdk/downloads) the `gcloud` command line utility.
-
-1.  Run the command
-
-    ```
-    ./scripts/dss-ops.py lambda update
-    ```
-
-	This populates the environment variables defining your stage into an AWS Simple Systems Manager parameter store.
-    These variables will be read from the parameter store and in-lined into the Lambda deployment packages during
-	deployment. This command should be executed whenever the environment variables are updated. The environments
-	of currently deployed Lambdas may optionally by updated in place with the flag `--update-deployed`.
+Next, configure the gcloud command line utility with the following steps:
 
 1.  Choose a region that has support for Cloud Functions and set `GCP_DEFAULT_REGION` to that region. See
     [the GCP locations list](https://cloud.google.com/about/locations/) for a list of supported regions.
 
-1.  Run `gcloud config set project PROJECT_ID` **where `PROJECT_ID` is the ID, not the name (i.e: hca-store-21555, NOT just hca-store) of the GCP project you selected earlier**.
+1.  Run `gcloud config set project PROJECT_ID`, where `PROJECT_ID` is the ID of the project, not the name (i.e:
+    `dss-store-21555`, NOT just `dss-store`) of the GCP project you selected earlier.
 
-1.  Enable required APIs:
+1. Enable the required APIs:
 
     ```
     gcloud services enable cloudfunctions.googleapis.com
@@ -203,21 +222,20 @@ process begins - Terraform cannot create this bucket itself. The bucket is named
     gcloud services enable iam.googleapis.com
     ```
 
-1.  Specify the names of Google Cloud Storage buckets in `environment.local`, using the environment variables `DSS_GS_BUCKET_*`,
-    and verify that `GCP_DEFAULT_REGION` points to your prefered region.
-    These buckets will be created with Terraform, and should not exist before deploying for the first time.
+1.  Specify the names of Google Cloud Storage buckets in `environment.local` using the environment variables `DSS_GS_BUCKET_*`.
+    These buckets will be created by Terraform and should not exist before deploying.
 
 #### Configure User Authentication/Authorization
 
-The following environment variables must be set to enable user authentication and authorization.
+The following environment variables must be set to enable user authentication and authorization:
 
 * `OIDC_AUDIENCE` must be populated with the expected JWT (JSON web token) audience.
 * `OPENID_PROVIDER` is the generator of the JWT, and is used to determine how the JWT is validated.
 * `OIDC_GROUP_CLAIM` is the JWT claim that specifies the group the users belongs to.
 * `OIDC_EMAIL_CLAIM` is the JWT claim that specifies the requests email.
 
-Also update `authorizationUrl` in **dss/dss-api.yml** to point to an authorization endpoint which returns a
-valid JWT.
+Also update `authorizationUrl` in `dss-api.yml` to point to an authorization endpoint that will return
+a valid JWT.
 
 Optional: To configure a custom swagger auth before deployment run:
 
@@ -230,18 +248,15 @@ Alternatively, to configure auth for all swagger endpoints, you can run:
 Note: Removing auth from endpoints will currently break tests, however adding auth should be fine
 (`make test` should run successfully).
 
-Note: The auth config file for deployment can also be set in `environment.local` with AUTH_CONFIG_FILE.
+Note: The auth config file for deployment can also be set in `environment.local` with `AUTH_CONFIG_FILE`.
 
 #### Configure email notifications
 
-Some daemons (dss-checkout-sfn for example) use Amazon SES to send emails. You must set `DSS_NOTIFICATION_SENDER` to
-your email address and then verify that address using the SES Console enabling SES to send notification emails from it.
-
-
+Some daemons (`dss-checkout-sfn` for example) use Amazon SES to send emails. You must set `DSS_NOTIFICATION_SENDER`
+to your email address, then verify that email address using the SES Console. This will enable SES to send notification
+emails.
 
 ## Deployment
-
----
 
 ### Running the DSS API locally
 
@@ -251,7 +266,8 @@ Run `./dss-api` in the top-level `data-store` directory to deploy the DSS API on
 
 When deploying for the first time, a Google Cloud Platform service account must first be created and credentialed.
 
-1.  Specify the name of the Google Cloud Platform service account in `environment.local` using the variable `DSS_GCP_SERVICE_ACCOUNT_NAME`.
+1.  Specify the name of the Google Cloud Platform service account in `environment.local` using the variable
+    `DSS_GCP_SERVICE_ACCOUNT_NAME`.
 
 1.  Provision a set of credentials that will allow you to run deployment.
 
