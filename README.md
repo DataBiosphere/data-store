@@ -373,13 +373,37 @@ make -C infra COMPONENT=elasticsearch plan
 make -C infra COMPONENT=elasticsearch apply
 ```
 
-#### Certificates
+#### Domains and Certificates
 
-A certificate matching your domain must be registered with
-[AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Set `ACM_CERTIFICATE_IDENTIFIER`
-to the identifier of the certificate, which can be found on the AWS console.
+It is assumed that [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html) and the 
+[AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) are used to 
+manage domains and HTTPS certificates for those domains.
 
-An AWS route53 zone must be available for your domain name and configured in `environment`.
+The first step is to verify the domain that the data store will use should be listed as a Hosted Zone in Route 53.
+To verify, open the AWS Web Console, select *Route 53*, then select *Hosted Zones*.
+
+The next step is to create a wildcard certificate for your domain. Your ownership or control of the domain must be
+verified to create a certificate matching the domain.  We recommended to use the DNS method of verification, as
+this is well-integrated with Route 53.
+
+1. Open the AWS Web Console and select the AWS Certificate Manager.
+1. Click "Request a Certificate".
+1. Select "Request a public certificate" and click "Next".
+1. Enter the domain or subdomain you want the data store to use. You can use `*.example.com` to create
+   a wildcard cert for an entire domain, or `*.data.example.com` to create a wildcard cert for the 
+   `data.example.com` subdomain only.
+1. Select "DNS validation" as the domain validation method.
+1. Optionally, add relevant tags (Name, Owner, Project, etc.) and click "Review".
+1. Click "Confirm and Request". This will inform you that the cert is pending validation and requires you to
+   verify ownership.
+1. Click the triangle next to the domain name to expand the cert request. Click "Create a record in Route 53".
+1. The Certificate Manager will ask you to confirm creation of a Route 53 DNS record. Click "Create", then
+   "Continue".
+1. Wait for the validation step to complete. Once the certificate validation step has finished, the "Status" will
+   change to "Issued".
+
+Once you have created your certificate, set `ACM_CERTIFICATE_IDENTIFIER` to the identifier of the certificate,
+which can be found on the AWS console.
 
 #### Deploying
 
