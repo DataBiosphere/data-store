@@ -21,7 +21,7 @@ For the json returned from the secret in GOOGLE_APPLICATION_CREDENTIALS_SECRETS_
     `project_id` should be `platform-hca`
     `type` should be `service_account`
     `client_email` should be the user account returned from the terraform output "service_account".
-                   For example: dev should be `travis-test@platform-sc.iam.gserviceaccount.com`.
+                   For example: dev should be `travis-test@platform-hca.iam.gserviceaccount.com`.
 """
 import subprocess
 import os
