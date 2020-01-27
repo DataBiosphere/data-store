@@ -13,8 +13,10 @@ Checking occurs as follows:
 
 #1
 For the json returned from the secret in GOOGLE_APPLICATION_SECRETS_SECRETS_NAME:
-    `auth_uri` should be 'https://accounts.google.com/o/oauth2/auth'
-    `token_uri` should be 'https://oauth2.googleapis.com/token'
+    `auth_uri` should be ['https://auth.ucsc.ucsc-cgp-redwood.org/oauth/authorize',
+                         'https://auth.dev.ucsc.ucsc-cgp-redwood.org/oauth/authorize']
+    `token_uri` should be ['https://auth.ucsc.ucsc-cgp-redwood.org/oauth/token',
+                          'https://auth.dev.ucsc.ucsc-cgp-redwood.org/oauth/token']
 
 #2
 For the json returned from the secret in GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME:
