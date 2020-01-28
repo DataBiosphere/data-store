@@ -286,18 +286,25 @@ To manually create the utility service account:
 
    c) "Cloud Functions – Cloud Function Developer"
 
-1. Create the account and download the service account key JSON file.
+1. Create the account and download the utility service account key JSON file.
 
-1. Place the file as `$DSS_HOME/gcp-credentials.json`. Terraform will use this utility service account credentials
-   file to create the deployment service account.
+1. Rename the downloaded credentials file as `$DSS_HOME/gcp-credentials-utility.json`. Terraform will use this
+   utility service account credentials file to create the deployment service account.
 
 Now that we have the utility service account credentials, we can use Terraform to create the deployment service
 account:
 
-1.  Specify the name of the Google Cloud deployment service account in `environment.local` using the environment
+1.  Specify the name of the Google Cloud Platform deployment service account in `environment.local` using the environment
     variable `DSS_GCP_SERVICE_ACCOUNT_NAME`.
 
-1.  Create the Google Cloud Platform service account using the command
+1.  Specify that you want to use the utility service account credentials to create the deployment service account by
+    setting `GOOGLE_APPLICATION_CREDENTIALS` to `$DSS_HOME/gcp-credentials-utility.json`:
+
+    ```
+    export GOOGLE_APPLICATION_CREDENTIALS="$DSS_HOME/gcp-credentials-utility.json"
+    ```
+
+1.  Create the Google Cloud Platform deployment service account using the command
 
     ```
     make -C infra COMPONENT=gcp_service_account apply
@@ -305,8 +312,8 @@ account:
 
     This step can be skipped if you're rotating credentials.
 
-1.  The prior command will download a JSON file. Place the downloaded JSON file into the project root as
-    `gcp-credentials.json`
+1.  Download the deployment service account key JSON file using the Google Cloud Platform web console ("IAM &
+    Admin" > "Service accounts"). Place the downloaded JSON file into the project root at `$DSS_HOME/gcp-credentials.json`.
 
 1.  Store the deployment service account credentials in the AWS Secrets Manager:
 
