@@ -20,7 +20,7 @@ parser.add_argument("branch", help="Branch to return most recent CI pipeline sta
 args = parser.parse_args()
 
 sm = boto3.client("secretsmanager")
-parameter_store = os.environ.get("DSS_PLATFORM")
+parameter_store = os.environ.get("DSS_PARAMETER_STORE")
 t
 
 gitlab_api = sm.get_secret_value(SecretId=f"{parameter_store}/gitlab-api")['SecretString']
