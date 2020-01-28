@@ -119,7 +119,7 @@ securityDefinitions:
       - '{{OIDC_EMAIL_CLAIM}}': the email of the requester
     type: oauth2
     flow: implicit
-    authorizationUrl: https://auth.ucsc.ucsc-cgp-redwood.org/authorize
+    authorizationUrl: {{AUTH_URL}}/authorize
     scopes:
       email: This scope value requests access to the email and email_verified Claims.
       openid: see http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
