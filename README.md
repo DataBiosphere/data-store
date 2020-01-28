@@ -373,10 +373,31 @@ make -C infra COMPONENT=elasticsearch plan
 make -C infra COMPONENT=elasticsearch apply
 ```
 
+#### Lambda Environment Update
+
+Open the AWS Web Console and navigate to the Elasticsearch Service.
+The Elasticsearch domain with the name matching `DSS_ES_DOMAIN` should
+show up in the list. Open this Elasticsearch domain. The Elasticsearch
+endpoint will be shown there, and will look something like:
+
+```
+https://search-${DSS_ES_DOMAIN}-abcxyz1234567890.${AWS_REGION}.es.amazonaws.com
+```
+
+Now set the environment variable `DSS_ES_ENDPOINT` in `environment.local` to this
+Elasticsearch url, minus the `https://` prefix. For example,
+
+```
+DSS_ES_ENDPOINT="search-${DSS_ES_DOMAIN}-abcxyz1234567890.${AWS_REGION}.es.amazonaws.com "
+```
+
+Note that it should **not** be stored in a version-controlled file like `environment`.
+Source the new environment files with `source environment` once the new variable is set.
+
 #### Domains and Certificates
 
-It is assumed that [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html) and the 
-[AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) are used to 
+It is assumed that [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html) and the
+[AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) are used to
 manage domains and HTTPS certificates for those domains.
 
 The first step is to verify the domain that the data store will use should be listed as a Hosted Zone in Route 53.
@@ -390,7 +411,7 @@ this is well-integrated with Route 53.
 1. Click "Request a Certificate".
 1. Select "Request a public certificate" and click "Next".
 1. Enter the domain or subdomain you want the data store to use. You can use `*.example.com` to create
-   a wildcard cert for an entire domain, or `*.data.example.com` to create a wildcard cert for the 
+   a wildcard cert for an entire domain, or `*.data.example.com` to create a wildcard cert for the
    `data.example.com` subdomain only.
 1. Select "DNS validation" as the domain validation method.
 1. Optionally, add relevant tags (Name, Owner, Project, etc.) and click "Review".
