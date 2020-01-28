@@ -133,10 +133,10 @@ OIDC_EMAIL_CLAIM=https://auth.data.humancellatlas.org/email
 OIDC_GROUP_CLAIM=https://auth.data.humancellatlas.org/group
 NOTIFY_URL=https://${API_DOMAIN_NAME}/internal/notify
 DSS_AUTHORIZED_GOOGLE_PROJECT_DOMAIN_ARRAY=(
-    platform-sc.iam.gserviceaccount.com
+    platform-hca.iam.gserviceaccount.com
 )
 DSS_AUTHORIZED_DOMAINS=${DSS_AUTHORIZED_GOOGLE_PROJECT_DOMAIN_ARRAY[*]}
-DSS_AUTHORIZED_DOMAINS_TEST="platform-sc.iam.gserviceaccount.com"
+DSS_AUTHORIZED_DOMAINS_TEST="platform-hca.iam.gserviceaccount.com"
 DSS_CERTIFICATE_VALIDATION=DNS
 DSS_ES_DOMAIN="${DSS_PLATFORM}-dss-es-${DSS_DEPLOYMENT_STAGE}"
 DSS_ES_INSTANCE_TYPE="t2.small.elasticsearch"
