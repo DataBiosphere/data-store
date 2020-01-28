@@ -21,7 +21,6 @@ args = parser.parse_args()
 
 sm = boto3.client("secretsmanager")
 parameter_store = os.environ.get("DSS_PARAMETER_STORE")
-t
 
 gitlab_api = sm.get_secret_value(SecretId=f"{parameter_store}/gitlab-api")['SecretString']
 gitlab_token = sm.get_secret_value(SecretId=f"{parameter_store}/gitlab-token")['SecretString']
