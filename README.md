@@ -310,7 +310,13 @@ account:
     make -C infra COMPONENT=gcp_service_account apply
     ```
 
-    This step can be skipped if you're rotating credentials.
+    Alternatively, an existing service account can be imported instead using `terraform import`:
+
+    ```
+    terraform import google_service_account.dss ${DSS_GCP_SERVICE_ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com
+    ```
+
+    Note that this step can be skipped if you're rotating credentials.
 
 1.  Download the deployment service account key JSON file using the Google Cloud Platform web console ("IAM &
     Admin" > "Service accounts"). Place the downloaded JSON file into the project root at `$DSS_HOME/gcp-credentials.json`.
