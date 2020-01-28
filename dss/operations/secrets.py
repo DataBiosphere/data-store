@@ -224,7 +224,7 @@ def set_secret(argv: typing.List[str], args: argparse.Namespace):
             - To ignore this warning, use the --force flag.
 
             Are you really sure you want to update the secret "{secret_name}"
-            in {get_secret_store_prefix()}?
+            in secrets store "{get_secret_store_prefix()}"?
             (Type 'y' or 'yes' to confirm):
             """
             response = input(confirm)

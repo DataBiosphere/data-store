@@ -422,7 +422,7 @@ def lambda_update(argv: typing.List[str], args: argparse.Namespace):
             ./dss-ops.py lambda environment
 
         Are you really sure you want to update the environment in SSM store
-        {get_ssm_variable_prefix()}?
+        "{get_ssm_variable_prefix()}"?
         (Type 'y' or 'yes' to confirm):
         """
         response = input(confirm)
