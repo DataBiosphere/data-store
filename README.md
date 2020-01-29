@@ -56,7 +56,7 @@ to review and edit the API specification. When the API is live, the spec is also
     * [Acquiring GCP Credentials](#acquiring-gcp-credentials)
     * [Setting Admin Emails](#setting-admin-emails)
     * [Deploying the DSS](#deploying-the-dss)
-        * [Naming Resources](#naming-resources)
+      * [Naming Resources](#naming-resources)
       * [Deploying Buckets](#deploying-buckets)
       * [Deploying ElasticSearch](#deploying-elasticsearch)
       * [Setting the Elasticsearch Endpoint](#setting-the-elasticsearch-endpoint)
@@ -349,17 +349,13 @@ Lastly, when you have finished creating the deployment service account, switch t
 `GOOGLE_APPLICATION_CREDENTIALS` to the deployment service account credentials file, which should be at
 `${DSS_HOME}/gcp-credentials.json`:
 
-```
-GOOGLE_APPLICATION_CREDENTIALS=${DSS_HOME}/gcp-credentials.json
-```
+    GOOGLE_APPLICATION_CREDENTIALS=${DSS_HOME}/gcp-credentials.json
 
-Note that if you are having problems with GCP credetials that look like this:
+Note that if you are having problems with GCP credentials that look like this:
 
-``
-Error applying IAM policy for project "${GCP_PROJECT_ID}":
-Error setting IAM policy for project "${GCP_PROJECT_ID}":
-googleapi: Error 403: The caller does not have permission, forbidden
-```
+    Error applying IAM policy for project "${GCP_PROJECT_ID}":
+    Error setting IAM policy for project "${GCP_PROJECT_ID}":
+    googleapi: Error 403: The caller does not have permission, forbidden
 
 double-check that your `GOOGLE_APPLICATION_CREDENTIALS` are set to the utility
 service account, and not the deployment service account - otherwise the deployment
@@ -393,7 +389,7 @@ lightweight in nature.
 More complex or larger infrastructure should be added to `$DSS_HOME/infra` instead of the daemon infrastructure
 whenever possible.
 
-##### Naming Resources
+#### Naming Resources
 
 Both [AWS](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) and
 [GCP](https://cloud.google.com/storage/docs/naming) use global namespaces shared amongst all
@@ -527,10 +523,8 @@ which can be found on the AWS console.
 
 Note that if you are having problems with certificates that look like this:
 
-```
-aws_api_gateway_domain_name.dss: Creating...
-Error: Error creating API Gateway Domain Name: BadRequestException: The provided certificate does not exist.
-```
+    aws_api_gateway_domain_name.dss: Creating...
+    Error: Error creating API Gateway Domain Name: BadRequestException: The provided certificate does not exist.
 
 double-check that the certificate you have created in Certificate Manager was created in the same region specified
 in your `environment` file by the variable `AWS_DEFAULT_REGION`.
