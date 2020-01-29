@@ -331,7 +331,27 @@ account:
     cat $DSS_HOME/gcp-credentials.json | ./scripts/dss-ops.py secrets set --force $GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME
     ```
 
-### Setting admin emails
+Lastly, when you have finished creating the deployment service account, switch to its credentials by resetting
+`GOOGLE_APPLICATION_CREDENTIALS` to the deployment service account credentials file, which should be at
+`${DSS_HOME}/gcp-credentials.json`:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=${DSS_HOME}/gcp-credentials.json
+```
+
+Note that if you are having problems with GCP credetials that look like this:
+
+``
+Error applying IAM policy for project "${GCP_PROJECT_ID}":
+Error setting IAM policy for project "${GCP_PROJECT_ID}":
+googleapi: Error 403: The caller does not have permission, forbidden
+```
+
+double-check that your `GOOGLE_APPLICATION_CREDENTIALS` are set to the utility
+service account, and not the deployment service account - otherwise the deployment
+service account is trying to modify itself!
+
+### Setting Admin Emails
 
 Set admin account emails within AWS Secret Manager:
 
