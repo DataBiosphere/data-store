@@ -251,7 +251,7 @@ Note: Removing auth from endpoints will currently break tests, however adding au
 
 Note: The auth config file for deployment can also be set in `environment.local` with `AUTH_CONFIG_FILE`.
 
-#### Configure email notifications
+#### Configure Email Notifications
 
 Some daemons (`dss-checkout-sfn` for example) use Amazon SES to send emails. You must set `DSS_NOTIFICATION_SENDER`
 to your email address, then verify that email address using the SES Console. This will enable SES to send notification
@@ -263,7 +263,7 @@ emails.
 
 Run `./dss-api` in the top-level `data-store` directory to deploy the DSS API on your `localhost`.
 
-### Acquiring GCP credentials
+### Acquiring GCP Credentials
 
 We use Terraform to automatically create a Google Cloud service account (referred to as the "deployment service account")
 to deploy Google Cloud infrastructure.
@@ -379,13 +379,13 @@ lightweight in nature.
 More complex or larger infrastructure should be added to `$DSS_HOME/infra` instead of the daemon infrastructure
 whenever possible.
 
-##### Resources
+##### Naming Resources
 
 Both [AWS](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) and
 [GCP](https://cloud.google.com/storage/docs/naming) use global namespaces shared amongst all
 users, so ensure that you name your resources appropriately to avoid name collisions.
 
-#### Buckets
+#### Deploying Buckets
 
 Buckets within AWS and GCP need to be available for use by the DSS. Use Terraform to set up the buckets:
 
@@ -394,7 +394,7 @@ make -C infra COMPONENT=buckets plan
 make -C infra COMPONENT=buckets apply
 ```
 
-#### ElasticSearch
+#### Deploying ElasticSearch
 
 The AWS Elasticsearch Service is used for metadata indexing. Currently the DSS uses version 5.5 of ElasticSearch. For typical development deployments the
 t2.small.elasticsearch instance type is sufficient. Use the [`DSS_ES_`](./docs/environment/README.md) variables to adjust the cluster as needed.
@@ -417,7 +417,7 @@ make -C infra COMPONENT=elasticsearch plan
 make -C infra COMPONENT=elasticsearch apply
 ```
 
-#### Lambda Environment Update
+#### Setting the Elasticsearch Endpoint
 
 Open the AWS Web Console and navigate to the Elasticsearch Service.
 The Elasticsearch domain with the name matching `DSS_ES_DOMAIN` should
@@ -449,7 +449,7 @@ The first step is to verify the domain that the data store will use should be li
 To verify, open the AWS Web Console, select *Route 53*, then select *Hosted Zones*.
 
 The next step is to create a wildcard certificate for your domain. Your ownership or control of the domain must be
-verified to create a certificate matching the domain.  We recommended to use the DNS method of verification, as
+verified to create a certificate matching the domain. We recommended to use the DNS method of verification, as
 this is well-integrated with Route 53.
 
 1. Open the AWS Web Console and select the AWS Certificate Manager.
@@ -548,9 +548,9 @@ To remake `variables.tf` for a particular component,
 make infra -C=buckets plan
 ```
 
-#### Existing Resources
+#### Existing Infrastructure
 
-What happens when resources already exist from a prior deployment?
+What happens when the deployment process tries to create resources, but those resources already exist?
 
 Here, we have two options:
 
