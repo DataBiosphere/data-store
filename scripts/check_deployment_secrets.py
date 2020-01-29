@@ -20,10 +20,14 @@ For the json returned from the secret in GOOGLE_APPLICATION_SECRETS_SECRETS_NAME
 
 #2
 For the json returned from the secret in GOOGLE_APPLICATION_CREDENTIALS_SECRETS_NAME:
-    `project_id` should be `platform-hca`
+    `project_id` should be `platform-hca` (see note below)
     `type` should be `service_account`
     `client_email` should be the user account returned from the terraform output "service_account".
                    For example: dev should be `travis-test@platform-hca.iam.gserviceaccount.com`.
+
+Note: platform-hca was the old name of the Google Cloud Project. The project name was updated to
+"platform-sc". However, the project ID was not updated and is still "platform-hca". The project ID
+is what is used in service account emails, URLs, etc.
 """
 import subprocess
 import os
