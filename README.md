@@ -473,8 +473,8 @@ deployment. There are two ways to check the lambda environment, both using the `
    ```
 
 1. Print lambda environment variables and values stored in the parameter store. These are the environment variable
-   values that **will be** deployed to the lambdas during the next deployment.
-
+   values that **will be** deployed to the lambdas during the next deployment. 
+   
    ```
    ./scripts/dss-ops.py params environment
    ```
@@ -544,11 +544,11 @@ Now deploy using make:
 
 If successful, you should be able to see the Swagger API documentation at:
 
-    https://<domain_name>
+    https://${API_DOMAIN_NAME}
 
 And you should be able to list bundles like this:
 
-    curl -X GET "https://<domain_name>/v1/bundles" -H  "accept: application/json"
+    curl -X GET "https://${API_DOMAIN_NAME}/v1/bundles" -H  "accept: application/json"
 
 #### Monitoring
 
