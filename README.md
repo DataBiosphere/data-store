@@ -288,20 +288,20 @@ To manually create the utility service account:
 
 1. Create the account and download the utility service account key JSON file.
 
-1. Rename the downloaded credentials file as `$DSS_HOME/gcp-credentials-utility.json`. Terraform will use this
-   utility service account credentials file to create the deployment service account.
+1. Place the file at `$DSS_HOME/gcp-credentials-util.json`. Terraform will use this utility service account credentials
+   file to create the deployment service account.
 
 Now that we have the utility service account credentials, we can use Terraform to create the deployment service
 account:
 
 1.  Specify the name of the Google Cloud Platform deployment service account in `environment.local` using the environment
-    variable `DSS_GCP_SERVICE_ACCOUNT_NAME`.
+    variable `DSS_GCP_SERVICE_ACCOUNT_NAME`. It should be set to `$DSS_HOME/gcp-credentials-util.json`.
 
 1.  Specify that you want to use the utility service account credentials to create the deployment service account by
-    setting `GOOGLE_APPLICATION_CREDENTIALS` to `$DSS_HOME/gcp-credentials-utility.json`:
+    setting `GOOGLE_APPLICATION_CREDENTIALS` to `$DSS_HOME/gcp-credentials-util.json`:
 
     ```
-    export GOOGLE_APPLICATION_CREDENTIALS="$DSS_HOME/gcp-credentials-utility.json"
+    export GOOGLE_APPLICATION_CREDENTIALS="$DSS_HOME/gcp-credentials-util.json"
     ```
 
 1.  Create the Google Cloud Platform deployment service account using the command
@@ -316,12 +316,14 @@ account:
     terraform import google_service_account.dss ${DSS_GCP_SERVICE_ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com
     ```
 
-    Note that this step can be skipped if you're rotating credentials.
+    This step can be skipped if you're rotating credentials.
 
-1.  Download the deployment service account key JSON file using the Google Cloud Platform web console ("IAM &
-    Admin" > "Service accounts"). Place the downloaded JSON file into the project root at `$DSS_HOME/gcp-credentials.json`.
+1.  Once the deployment service account has been created, open the Google Cloud Platform web console and navigate
+    to "IAM & Admin", then "Service accounts". Click the menu on the right and select the "Create new key" option.
+    Create and download a new JSON key and place the downloaded key into the project root at
+    `${DSS_HOME}/gcp-credentials.json`.
 
-1.  Store the deployment service account credentials in the AWS Secrets Manager:
+1.  Store the deployment service account credentials just downloaded in the AWS Secrets Manager:
 
     ```
     ### WARNING: RUNNING THIS COMMAND WILL
@@ -336,6 +338,12 @@ Set admin account emails within AWS Secret Manager:
     ### WARNING: RUNNING THIS COMMAND WILL
     ###          CLEAR EXISTING SECRET VALUE
     echo -n 'user1@example.com,user2@example.com' |  ./scripts/dss-ops.py secrets set --force $ADMIN_USER_EMAILS_SECRETS_NAME
+
+Alternatively, define `ADMIN_USER_EMAILS` in `environment.local` and run:
+
+    ### WARNING: RUNNING THIS COMMAND WILL
+    ###          CLEAR EXISTING SECRET VALUE
+    echo -n $ADMIN_USER_EMAILS |  ./scripts/dss-ops.py secrets set --force $ADMIN_USER_EMAILS_SECRETS_NAME
 
 ### Deploying the DSS
 
