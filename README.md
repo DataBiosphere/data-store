@@ -439,6 +439,46 @@ Note that it should **not** be stored in a version-controlled file like `environ
 the local environment file `environment.local` instead. Export the new environment variable values with 
 `source environment` once the new variable is set.
 
+#### Updating the Lambda Environment
+
+Once the `DSS_ES_ENDPOINT`, `DSS_ES_ALLOWED_IPS`, and `ADMIN_USER_EMAILS` environment variables have been set,
+all variables required by the lambda functions have been set, so the next step is to export the lambda function
+environment variables in the local environment and store it in the parameter store under the variable
+`environment`. These environment variables will then be set in each lambda function during the deployment step.
+
+To export the lambda function environment variables, use the `lambda update` function of the dss operations script:
+
+```
+./scripts/dss-ops.py lambda update
+```
+
+If there are already lambda functions deployed, you can add the `--update-deployed` flag to export the variables to
+all deployed lambda functions, in addition to exporting the variables to the parameter store.
+
+```
+./scripts/dss-ops.py lambda update --update-deployed
+```
+
+#### Checking the Lambda Environment
+
+It is useful to be able to check on the lambda environments to troubleshoot problems with a data store
+deployment. There are two ways to check the lambda environment, both using the `./scripts/dss-ops.py` script:
+
+1. Print lambda environment variables and values from the currently-deployed lambdas. These are the environment
+   variable values that are **currently** deployed to the lambdas (and therefore may not match values in the
+   parameter store or in your local environment).
+
+   ```
+   ./scripts/dss-ops.py lambda environment
+   ```
+
+1. Print lambda environment variables and values stored in the parameter store. These are the environment variable
+   values that **will be** deployed to the lambdas during the next deployment.
+
+   ```
+   ./scripts/dss-ops.py params environment
+   ```
+
 #### Domains and Certificates
 
 It is assumed that [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html) and the
