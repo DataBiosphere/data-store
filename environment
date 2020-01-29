@@ -145,7 +145,7 @@ DSS_ES_INSTANCE_COUNT="1"
 DSS_ES_DOMAIN_INDEX_LOGS_ENABLED="false"
 
 DSS_ZONE_NAME="ucsc-cgp-redwood.org."
-ACM_CERTIFICATE_IDENTIFIER="b96be504-efba-42c0-a764-6135cb1da605" # cert for *.ucsc-cgp-redwood.org
+ACM_CERTIFICATE_IDENTIFIER="0c218f59-236f-41cc-a5ce-2e56fa0c308c" # cert for *.dev.ucsc-cgp-redwood.org
 PYTHONWARNINGS=ignore:ResourceWarning,ignore::UserWarning:zipfile:
 DSS_SECRETS_STORE="${DSS_PLATFORM}/dss"
 DSS_PARAMETER_STORE="${DSS_PLATFORM}/dss"
