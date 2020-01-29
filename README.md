@@ -33,40 +33,54 @@ to review and edit the API specification. When the API is live, the spec is also
 
 ## Table of Contents
 
-   * [DSS: The Data Storage System](#dss-the-data-storage-system)
-      * [Overview](#overview)
-        * [Architectural Diagram](#architectural-diagram)
-        * [DSS API](#dss-api)
-      * [Table of Contents](#table-of-contents)
-      * [Getting Started](#getting-started)
-        * [Install Dependencies](#install-dependencies)
-        * [Configuration](#configuration)
-          * [Configure Terraform](#configure-terraform)
-          * [Configure AWS](#configure-aws)
-          * [Configure GCP](#configure-gcp)
-          * [Configure User Authentication/Authorization](#configure-user-authenticationauthorization)
-          * [Configure email notifications](#configure-email-notifications)
-      * [Deployment](#deployment)
-        * [Running the DSS API locally](#running-the-dss-api-locally)
-        * [Acquiring GCP credentials](#acquiring-gcp-credentials)
-        * [Setting admin emails](#setting-admin-emails)
-        * [Deploying the DSS](#deploying-the-dss)
-          * [Resources](#resources)
-          * [Buckets](#buckets)
-          * [ElasticSearch](#elasticsearch)
-          * [Certificates](#certificates)
-          * [Deploying](#deploying)
-        * [CI/CD with Travis CI and GitLab](#cicd-with-travis-ci-and-gitlab)
-        * [Authorizing Travis CI to deploy](#authorizing-travis-ci-to-deploy)
-        * [Authorizing the event relay](#authorizing-the-event-relay)
-      * [Using the HCA Data Store CLI Client](#using-the-hca-data-store-cli-client)
-      * [Checking Indexing](#checking-indexing)
-      * [Running Tests](#running-tests)
-      * [Development](#development)
-         * [Managing dependencies](#managing-dependencies)
-         * [Logging conventions](#logging-conventions)
-         * [Enabling Profiling](#enabling-profiling)
-      * [Contributing](#contributing)
+* [DSS: The Data Storage System](#dss-the-data-storage-system)
+  * [Overview](#overview)
+    * [Architectural Diagram](#architectural-diagram)
+    * [DSS API](#dss-api)
+  * [Table of Contents](#table-of-contents)
+  * [Getting Started](#getting-started)
+    * [Install Dependencies](#install-dependencies)
+      * [Python Dependencies](#python-dependencies)
+      * [AWS and GCP CLI Tools](#aws-and-gcp-cli-tools)
+      * [Terraform](#terraform)
+      * [Other Utilities](#other-utilities)
+    * [Configuration](#configuration)
+      * [Configure Data Store](#configure-data-store)
+      * [Configure Terraform](#configure-terraform)
+      * [Configure AWS](#configure-aws)
+      * [Configure GCP](#configure-gcp)
+      * [Configure User Authentication/Authorization](#configure-user-authenticationauthorization)
+      * [Configure Email Notifications](#configure-email-notifications)
+  * [Deployment](#deployment)
+    * [Running the DSS API locally](#running-the-dss-api-locally)
+    * [Acquiring GCP Credentials](#acquiring-gcp-credentials)
+    * [Setting Admin Emails](#setting-admin-emails)
+    * [Deploying the DSS](#deploying-the-dss)
+        * [Naming Resources](#naming-resources)
+      * [Deploying Buckets](#deploying-buckets)
+      * [Deploying ElasticSearch](#deploying-elasticsearch)
+      * [Setting the Elasticsearch Endpoint](#setting-the-elasticsearch-endpoint)
+      * [Updating the Lambda Environment](#updating-the-lambda-environment)
+      * [Checking the Lambda Environment](#checking-the-lambda-environment)
+      * [Domains and Certificates](#domains-and-certificates)
+      * [Creating AWS Event Relay User](#creating-aws-event-relay-user)
+      * [Deploying](#deploying)
+      * [Monitoring](#monitoring)
+      * [Updating Environment Variables](#updating-environment-variables)
+      * [Existing Infrastructure](#existing-infrastructure)
+    * [CI/CD with Travis CI and GitLab](#cicd-with-travis-ci-and-gitlab)
+    * [Authorizing Travis CI to deploy](#authorizing-travis-ci-to-deploy)
+    * [Authorizing the event relay](#authorizing-the-event-relay)
+  * [Using the HCA Data Store CLI Client](#using-the-hca-data-store-cli-client)
+  * [Checking Indexing](#checking-indexing)
+  * [Running Tests](#running-tests)
+    * [Test suites](#test-suites)
+  * [Development](#development)
+    * [Managing dependencies](#managing-dependencies)
+    * [Logging conventions](#logging-conventions)
+    * [Enabling Profiling](#enabling-profiling)
+  * [Security Policy](#security-policy)
+  * [Contributing](#contributing)
 
 ## Getting Started
 
@@ -274,22 +288,22 @@ account is only used once, during the first deployment, to create the deployment
 
 To manually create the utility service account:
 
-1. In the [Google Cloud Console](https://console.cloud.google.com/), select the correct Google user account on the top
-   right and the correct GCP project in the drop down in the top center. Go to "IAM & Admin", then "Service accounts".
+1.  In the [Google Cloud Console](https://console.cloud.google.com/), select the correct Google user account on the top
+    right and the correct GCP project in the drop down in the top center. Go to "IAM & Admin", then "Service accounts".
 
-1. Click "Create service account" and select "Furnish a new private key". Under "Roles", select the following
-   roles:
+1.  Click "Create service account" and select "Furnish a new private key". Under "Roles", select the following
+    roles:
 
-   a) "Project – Owner"
+    a) "Project – Owner"
 
-   b) "Service Accounts – Service Account User"
+    b) "Service Accounts – Service Account User"
 
-   c) "Cloud Functions – Cloud Function Developer"
+    c) "Cloud Functions – Cloud Function Developer"
 
-1. Create the account and download the utility service account key JSON file.
+1.  Create the account and download the utility service account key JSON file.
 
-1. Place the file at `$DSS_HOME/gcp-credentials-util.json`. Terraform will use this utility service account credentials
-   file to create the deployment service account.
+1.  Place the file at `$DSS_HOME/gcp-credentials-util.json`. Terraform will use this utility service account credentials
+    file to create the deployment service account.
 
 Now that we have the utility service account credentials, we can use Terraform to create the deployment service
 account:
@@ -523,16 +537,17 @@ in your `environment` file by the variable `AWS_DEFAULT_REGION`.
 
 #### Creating AWS Event Relay User
 
-One last piece of infrastructure that must be deployed is an AWS Event Relay User.
-The event relay ([`daemons/dss-gs-event-relay`](daemons/gss-gs-event-relay)) is
-responsible for transmitting events from AWS to GCP. Running this script will create
-a user, which requirest the `iam:CreateUser` privilege, which is granted to project
-admins on the GCP account.
+One last piece of infrastructure that must be created before deployment is the AWS Event Relay User.  The event
+relay ([`daemons/dss-gs-event-relay`](daemons/gss-gs-event-relay)) is responsible for transmitting events from AWS
+to GCP. Running this script will create a user, which requirest the `iam:CreateUser` privilege, which is granted to
+project admins on the GCP account.
 
 ```
 # This script must be run by a GCP project admin
 ./scripts/create_config_aws_event_relay_user.py
 ```
+
+If you do not run this step, the `make deploy` command will fail due to a missing secret in the secrets manager.
 
 #### Deploying
 
@@ -668,7 +683,7 @@ outside of AWS. Run `scripts/create_config_aws_event_relay_user.py` to create an
 restricted access policy. This script also creates the user access key and stores it in an AWS Secrets Manager
 store.
 
-**Note** when executing the script above, ensure that the role/user used within AWS is  authorized to perform: iam:CreateUser
+**Note** when executing the script above, ensure that the role/user used within AWS is authorized to perform: iam:CreateUser
 
 ## Using the HCA Data Store CLI Client
 
