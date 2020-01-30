@@ -325,9 +325,11 @@ account:
     make -C infra COMPONENT=gcp_service_account apply
     ```
 
-    Alternatively, an existing service account can be imported instead using `terraform import`:
+    Alternatively, an existing service account can be imported instead using `terraform import` from the Google
+    service account component directory:
 
     ```
+    cd infra/gcp_service_account
     terraform import google_service_account.dss ${DSS_GCP_SERVICE_ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com
     ```
 
