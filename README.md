@@ -30,6 +30,7 @@ You can use the
 [Swagger Editor](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/DataBiosphere/data-store/master/dss-api.yml)
 to review and edit the API specification. When the API is live, the spec is also available at `/v1/swagger.json`.
 
+The DSS API Swagger is also available at <https://dss.dev.ucsc-cgp-redwood.org>.
 
 ## Table of Contents
 
