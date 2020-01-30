@@ -617,12 +617,22 @@ The `terraform import` command allows Terraform to import infrastructure so that
 managed as part of the data store's infrastructure. This command must be run directly, there
 are no `make` commands for it.
 
+Here is an example of how to import an existing Google service account:
+
 ```
-cd infra/gcp_service_account/
+cd infra/gcp_service_account
 terraform import google_service_account.dss ${DSS_GCP_SERVICE_ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com
 ```
 
-The syntax depends on each component.
+and another example to import an existing DynamoDB table for the async step function database:
+
+```
+cd infra/async_state_db/
+terraform import aws_dynamodb_table.sfn_state dss-async-state-dev
+```
+
+The first argument after `terraform import` will be the resource identifier, and the second argument
+is the name of the resource that you would like to import.
 
 **Deleting and Re-Creating Resources:**
 
