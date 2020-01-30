@@ -683,15 +683,6 @@ credentials once from your workstation. After this is done, Travis CI will be ab
 repeat the `make deploy` step from a privileged account any time you change the IAM policies templates in
 `iam/policy-templates/`.
 
-### Authorizing the event relay
-
-Environment variables provide the AWS credentials needed to relay events originating from supported cloud platforms
-outside of AWS. Run `scripts/create_config_aws_event_relay_user.py` to create an AWS IAM user with the appropriate
-restricted access policy. This script also creates the user access key and stores it in an AWS Secrets Manager
-store.
-
-**Note** when executing the script above, ensure that the role/user used within AWS is authorized to perform: iam:CreateUser
-
 ## Using the HCA Data Store CLI Client
 
 Now that you have deployed the data store, the next step is to use the HCA Data Store CLI to upload and download data to
