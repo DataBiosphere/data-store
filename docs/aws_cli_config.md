@@ -19,7 +19,7 @@ Default region name [None]: us-east-1
 Default output format [None]:
 ```
 
-This will create a config file `~/.aws/config` with configuration variable values for your AWS account, 
+This will create a config file `~/.aws/config` with configuration variable values for your AWS account,
 and a credentials file `~/.aws/credentials` with API keys for your account (this is sensitive information).
 
 An example `~/.aws/config` file:
@@ -36,7 +36,7 @@ An example `~/.aws/credentials` file:
 ```
 [red-creds]
 aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY 
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
 
 Note that `source_profile` in the config file refers to the label given to the set of credentials
@@ -139,10 +139,10 @@ An example multi-profile `~/.aws/credentials` file:
 ```
 [red-creds]
 aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY 
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 [green-creds]
 aws_access_key_id = AKIAZHOHOHOHOEXAMPLE
-aws_secret_access_key = vy7JKuTKXfgrm/N6MQOZY/cGwPFrymEXAMPLEKEY 
+aws_secret_access_key = vy7JKuTKXfgrm/N6MQOZY/cGwPFrymEXAMPLEKEY
 ```
 
 To verify that each profile is working, try running AWS commands
@@ -156,4 +156,6 @@ aws s3 ls --profile my-green-profile
 **IMPORTANT:** Firefox has an internal bug that causes problems when accessing the
 AWS web console using multiple AWS accounts. If you are having problems accessing the
 AWS web console with multilpe accounts, try clearing the browser cache or restarting
-the browser, or try using Chrome.
+the browser. Alternatively, try using the
+[multi-account-containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/)
+Firefox addon.
