@@ -64,7 +64,7 @@ list-buckets action. You should be propmted for your 2FA code:
 
 ```
 $ aws s3 ls
-Enter MFA code for arn:aws:iam::652235167018:mfa/chmreid@ucsc.edu:
+Enter MFA code for arn:aws:iam::123456789:mfa/chmreid@ucsc.edu:
 
 2020-01-17 15:03:22 mah-bukkit-1
 2020-01-17 15:03:22 mah-bukkit-2
