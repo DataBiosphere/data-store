@@ -448,8 +448,8 @@ Elasticsearch url, minus the `https://` prefix. For example,
 DSS_ES_ENDPOINT="search-${DSS_ES_DOMAIN}-abcxyz1234567890.${AWS_REGION}.es.amazonaws.com "
 ```
 
-Note that it should **not** be stored in a version-controlled file like `environment`, but should be stored in 
-the local environment file `environment.local` instead. Export the new environment variable values with 
+Note that it should **not** be stored in a version-controlled file like `environment`, but should be stored in
+the local environment file `environment.local` instead. Export the new environment variable values with
 `source environment` once the new variable is set.
 
 #### Updating the Lambda Environment
@@ -486,8 +486,8 @@ deployment. There are two ways to check the lambda environment, both using the `
    ```
 
 1. Print lambda environment variables and values stored in the parameter store. These are the environment variable
-   values that **will be** deployed to the lambdas during the next deployment. 
-   
+   values that **will be** deployed to the lambdas during the next deployment.
+
    ```
    ./scripts/dss-ops.py params environment
    ```
@@ -728,8 +728,8 @@ indexed metadata.
 
     `make --dry-run`
 
-1. Populate text fixture buckets with test fixture data _**(This command will completely empty the given buckets** before populating them with test fixture data, please ensure
-the correct bucket names are provided)**_:
+1. Populate text fixture buckets with test fixture data **(This command will completely empty the given buckets
+   before populating them with test fixture data, please ensure the correct bucket names are provided)**:
 
     ```
     tests/fixtures/populate.py --s3-bucket $DSS_S3_BUCKET_TEST_FIXTURES --gs-bucket $DSS_GS_BUCKET_TEST_FIXTURES
