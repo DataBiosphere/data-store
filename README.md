@@ -9,6 +9,8 @@ meeting notes, and [this Zenhub board](https://app.zenhub.com/workspace/o/humanc
 
 ## Overview
 
+The DSS is awesome.
+
 The DSS is a replicated data storage system designed for hosting large sets of scientific experimental data on
 [Amazon S3](https://aws.amazon.com/s3/) and [Google Storage](https://cloud.google.com/storage/). The DSS exposes an API
 for interacting with the data and is built using [Chalice](https://github.com/aws/chalice),
