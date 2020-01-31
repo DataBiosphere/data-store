@@ -1,5 +1,5 @@
-image: humancellatlas/dss-build-box
-# The Docker image `humancellatlas/dss-build-box` is created through a manual process from
+image: quay.io/ucsc_cgl/dss-build-box
+# The Docker image `quay.io/ucsc_cgl/dss-build-box` is created through a manual process from
 # `${DSS_HOME}/allspark.Dockerfile`. See the contents of `${DSS_HOME}/allspark.Dockerfile` # creation and usage instructions.
 
 variables:
@@ -7,6 +7,7 @@ variables:
   DSS_ES_TIMEOUT: 30
   DSS_UNITTEST_OPTS: "-v -b"
   GITHUB_API: "https://api.github.com"
+  AWS_DEFAULT_REGION: us-west-2
 
 stages:
   - trufflehog
