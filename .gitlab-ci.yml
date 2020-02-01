@@ -28,9 +28,10 @@ before_script:
   - if [[ -f "environment.$CI_COMMIT_REF_NAME" ]]; then
   -   source environment.$CI_COMMIT_REF_NAME
   - fi
-  - ls ~/.aws
-  - cat ~/.aws/credentials
-  - scripts/dss-ops.py secrets list
+  - pip install awscli
+  - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+  - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+  - aws configure set region $AWS_DEFAULT_REGION
   - scripts/dss-ops.py secrets get application_secrets.json > application_secrets.json
   - scripts/dss-ops.py secrets get gcp-credentials.json > gcp-credentials.json
   - export GOOGLE_APPLICATION_CREDENTIALS=$(pwd -P)/gcp-credentials.json
