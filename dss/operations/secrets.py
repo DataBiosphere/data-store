@@ -17,8 +17,6 @@ from dss.operations import dispatch
 from dss.operations.util import polite_print
 from dss.util.aws.clients import secretsmanager as sm_client  # type: ignore
 
-
-# sm_client = boto3.client('ssm', region_name='us-west-2')
 logger = logging.getLogger(__name__)
 
 
