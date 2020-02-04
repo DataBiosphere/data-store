@@ -13,8 +13,8 @@ within the main account.
 
 ```
 $ aws configure
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+AWS Access Key ID [None]: EXAMPLE-AWS-KEY
+AWS Secret Access Key [None]: EXAMPLE-AWS-SECRET-KEY
 Default region name [None]: us-east-1
 Default output format [None]:
 ```
@@ -35,8 +35,8 @@ An example `~/.aws/credentials` file:
 
 ```
 [red-creds]
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_access_key_id = EXAMPLE-AWS-KEY
+aws_secret_access_key = EXAMPLE-AWS-SECRET-KEY
 ```
 
 Note that `source_profile` in the config file refers to the label given to the set of credentials
@@ -64,7 +64,7 @@ list-buckets action. You should be propmted for your 2FA code:
 
 ```
 $ aws s3 ls
-Enter MFA code for arn:aws:iam::123456789:mfa/chmreid@ucsc.edu:
+Enter MFA code for arn:aws:iam::123456789:mfa/whoami@ucsc.edu:
 
 2020-01-17 15:03:22 mah-bukkit-1
 2020-01-17 15:03:22 mah-bukkit-2
@@ -84,8 +84,8 @@ will output temporary credentials:
 
 ```
 $ assume-role my-red-profile
-export AWS_ACCESS_KEY_ID="ASIAI....MPLE"
-export AWS_SECRET_ACCESS_KEY="DuH...MPLE"
+export AWS_ACCESS_KEY_ID="EXAMPLE-AWS-KEY"
+export AWS_SECRET_ACCESS_KEY="EXAMPLE-AWS-SECRET-KEY"
 export AWS_SESSION_TOKEN="AQ...1BQ=="
 export AWS_SECURITY_TOKEN="AQ...1BQ=="
 export ASSUMED_ROLE="my-red-profile"
@@ -138,11 +138,11 @@ An example multi-profile `~/.aws/credentials` file:
 
 ```
 [red-creds]
-aws_access_key_id = AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_access_key_id = EXAMPLE-AWS-KEY-1
+aws_secret_access_key = EXAMPLE-AWS-SECRET-KEY-1
 [green-creds]
-aws_access_key_id = AKIAZHOHOHOHOEXAMPLE
-aws_secret_access_key = vy7JKuTKXfgrm/N6MQOZY/cGwPFrymEXAMPLEKEY
+aws_access_key_id = EXAMPLE-AWS-KEY-2
+aws_secret_access_key = EXAMPLE-AWS-SECRET-KEY-2
 ```
 
 To verify that each profile is working, try running AWS commands
