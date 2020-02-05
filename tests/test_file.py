@@ -89,7 +89,7 @@ class TestFileApi(unittest.TestCase, TestAuthMixin, DSSUploadMixin, DSSAssertMix
             "dss-s3_etag": "3b83ef96387f14655fc854ddc3c6bd57",
             "dss-sha1": "2b8b815229aa8a61e483fb4ba0588b8b6c491890",
             "dss-sha256": "cfc7749b96f63bd31c3c42b5c471bf75681405"
-                              "3e847c10f3eb003417bc523d30"
+                          "3e847c10f3eb003417bc523d30"
         }
         for sum_type, fmt in checksum_format.items():
             self.assertEqual(re.match(fmt, self.bad_checksums[sum_type]), None)
