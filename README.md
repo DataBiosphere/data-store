@@ -168,6 +168,25 @@ values defined in `environment.local`.
 
 The full list of configurable environment variables and their descriptions is [here](docs/environment/README.md).
 
+#### Configure Multi-Stage Data Store
+
+To configure a data store with multiple stages, several changes are needed:
+
+1. The `environment` configuration file will need additional
+   stage-specific environment variables defined. See the [Human Cell Atlas data store
+   repo](https://github.com/HumanCellAtlas/data-store) and its [`environment`
+   file](https://github.com/HumanCellAtlas/data-store/blob/master/environment) for an example of an environment file
+   for a multi-stage data store deployment.
+
+2. A stage-specific environment file `environment.$DSS_STAGE` should also be used to override some
+   environment variable values. For an example of a stage-specific environment file, see the
+   [`environment.prod`](https://github.com/HumanCellAtlas/data-store/blob/master/environment.prod) file in the
+   [Human Cell Atlas data store repo](https://github.com/HumanCellAtlas/data-store).
+
+3. Stage-specific policy documents should be included at `daemons/*/.chalice/policy-$DSS_STAGE.json` and
+   `chalice/.chalice/policy-$DSS_STAGE.json`.  These policy documents are used by the `build_deploy_config.sh`
+   scripts in `daemons/` and `chalice/` to deploy lambda functions to AWS.
+
 #### Configure Terraform
 
 The DSS uses Terraform's [AWS S3 backend](https://www.terraform.io/docs/backends/types/s3.html) for deployment.
