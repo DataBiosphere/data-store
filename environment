@@ -62,10 +62,8 @@ DSS_EVENT_RELAY_NAME=dss-gs-event-relay-
 CHECKOUT_CACHE_CRITERIA='[{"type":"application/json","max_size":12314}]'
 
 # For a multi-stage data store deployment:
-# - add bucket names specific to that stage
-# - add stage-specific environment file to override (e.g.) generic bucket names
-#   with stage-specific values
-# - update chalice/.chalice/ and daemons/*/.chalice with stage-specific policy docs
+# - add bucket names specific to each stage
+# - add stage-specific environment files that override generic variables with stage-specific values
 
 DSS_S3_BUCKET="${DSS_PLATFORM}-dss-${DSS_DEPLOYMENT_STAGE}"
 DSS_S3_BUCKET_TEST="${DSS_S3_BUCKET}-test"
