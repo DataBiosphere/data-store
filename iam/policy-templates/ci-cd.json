@@ -56,7 +56,10 @@
     },
     {
       "Effect": "Allow",
-      "Action": "iam:ListRoles",
+      "Action": [
+        "iam:ListRoles",
+        "iam:PassRole"
+      ],
       "Resource": "arn:aws:iam::$account_id:role/"
     },
     {
