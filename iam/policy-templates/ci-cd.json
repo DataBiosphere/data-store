@@ -63,8 +63,7 @@
       "Effect": "Allow",
       "Action": "logs:*",
       "Resource": [
-        "arn:aws:logs:*:$account_id:log-group:dss-*-$DSS_DEPLOYMENT_STAGE*",
-        "arn:aws:logs:*:$account_id:log-group:dss-test-logging*"
+        "arn:aws:logs:*:$account_id:log-group:*"
       ]
     },
     {
@@ -76,7 +75,7 @@
       ],
       "Resource": [
         "arn:aws:lambda:*:$account_id:function:dss-*",
-        "arn:aws:es:*:$account_id:domain/dss-index-dev", "arn:aws:es:*:$account_id:domain/dss-index-dev/*",
+        "arn:aws:es:*:$account_id:domain/*", "arn:aws:es:*:$account_id:domain/*/*",
         "arn:aws:sns:*:$account_id:dss-*",
         "arn:aws:sns:*:$account_id:domovoi-s3-events-*",
         "arn:aws:states:*:$account_id:*:dss-*"
@@ -103,15 +102,19 @@
     {
       "Effect": "Allow",
       "Action": [
-        "lambda:List*",
-        "lambda:CreateEventSourceMapping",
-        "lambda:GetEventSourceMapping",
-        "lambda:TagResource",
         "apigateway:*",
         "dynamodb:ListTables",
         "dynamodb:Query",
         "dynamodb:DescribeTable",
-        "sqs:ListQueues"
+        "lambda:List*",
+        "lambda:CreateEventSourceMapping",
+        "lambda:GetEventSourceMapping",
+        "lambda:TagResource",
+        "route53:*",
+        "sqs:ListQueues",
+        "tag:GetTagKeys",
+        "tag:GetResources",
+        "tag:GetTagValues"
 	],
       "Resource": "*"
     },
@@ -129,7 +132,7 @@
     {
       "Effect": "Allow",
       "Action": "sqs:*",
-      "Resource": "arn:aws:sqs:*:$account_id:dss-dlq-*"
+      "Resource": "arn:aws:sqs:*:$account_id:*"
     },
     {
       "Effect": "Allow",
@@ -164,14 +167,10 @@
       "Action": "secretsmanager:Get*",
       "Resource": "arn:aws:secretsmanager:*:$account_id:secret:$DSS_SECRETS_STORE/*"
     },
-    {
+        {
       "Effect": "Allow",
-      "Action": [
-        "tag:GetTagKeys",
-        "tag:GetResources",
-        "tag:GetTagValues"
-      ],
-      "Resource": "*"
+      "Action": "ssm:*",
+      "Resource": "arn:aws:ssm:*:$account_id:parameter/$DSS_PARAMETER_STORE/*"
     }
   ]
 }
