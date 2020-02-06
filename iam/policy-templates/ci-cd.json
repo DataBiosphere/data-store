@@ -57,8 +57,7 @@
     {
       "Effect": "Allow",
       "Action": [
-        "iam:ListRoles",
-        "iam:PassRole"
+        "iam:ListRoles"
       ],
       "Resource": "arn:aws:iam::$account_id:role/"
     },
@@ -81,7 +80,8 @@
         "arn:aws:es:*:$account_id:domain/*", "arn:aws:es:*:$account_id:domain/*/*",
         "arn:aws:sns:*:$account_id:dss-*",
         "arn:aws:sns:*:$account_id:domovoi-s3-events-*",
-        "arn:aws:states:*:$account_id:*:dss-*"
+        "arn:aws:states:*:$account_id:*:dss-*",
+        "arn:aws:lambda:*:$account_id:layer:*"
       ],
       "Effect": "Allow"
     },
@@ -174,6 +174,11 @@
       "Effect": "Allow",
       "Action": "ssm:*",
       "Resource": "arn:aws:ssm:*:$account_id:parameter/$DSS_PARAMETER_STORE/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::$account_id:role/dss-*"
     }
   ]
 }
