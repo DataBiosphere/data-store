@@ -36,6 +36,7 @@ envsubst_vars='$DSS_DEPLOYMENT_STAGE
                $DSS_EVENT_RELAY_AWS_ACCESS_KEY_ID_SECRETS_NAME
                $DSS_EVENT_RELAY_AWS_SECRET_ACCESS_KEY_SECRETS_NAME
                $DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE
+               $DSS_FLASHFLOOD_BUCKET
                $account_id'
 
 aws iam put-${iam_principal_type}-policy \
