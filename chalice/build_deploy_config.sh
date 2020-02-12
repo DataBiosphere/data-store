@@ -54,7 +54,7 @@ cat "$config_json" | jq ".stages.$stage.tags.DSS_DEPLOY_ORIGIN=\"$DEPLOY_ORIGIN\
 	.stages.$stage.tags.owner=\"${DSS_INFRA_TAG_OWNER}\" | \
 	.stages.$stage.tags.env=\"${DSS_DEPLOYMENT_STAGE}\""  | sponge "$config_json"
 
-env_json=$(aws ssm get-parameter --name /dcp/dss/${DSS_DEPLOYMENT_STAGE}/environment | jq -r .Parameter.Value)
+env_json=$(aws ssm get-parameter --name /${DSS_PARAMETER_STORE}/${DSS_DEPLOYMENT_STAGE}/environment | jq -r .Parameter.Value)
 for var in $(echo $env_json | jq -r keys[]); do
     val=$(echo $env_json | jq .$var)
     cat "$config_json" | jq .stages.$stage.environment_variables.$var="$val" | sponge "$config_json"
@@ -68,6 +68,12 @@ cp "$policy_json" "$stage_policy_json"
 
 if [[ ${CI:-} != true ]]; then
 	# IAM policies must be updated from an operators machine, this will not run on CI environments.
+	echo "Looking for IAM Role: $iam_role_arn"
+	if ! aws iam get-role --role-name $lambda_name; then
+		export trust_policy_path=${DSS_HOME}/iam/trust-relations/lambda.json
+		aws iam create-role --role-name $lambda_name --path / --assume-role-policy-document file://$trust_policy_path
+		echo "created IAM Role: $lambda_name, with trust policy from $trust_policy_path"
+	fi
 	echo "updating $iam_role_arn with $stage_policy_json"
 	aws iam put-role-policy --role-name $lambda_name --policy-name $lambda_name --policy-document file://$stage_policy_json
 fi

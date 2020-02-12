@@ -1,13 +1,13 @@
 swagger: '2.0'
 info:
-  title: HCA DCP DSS API
+  title: DataBiosphere DSS API
   description: >
-    Human Cell Atlas Data Coordination Platform Data Storage System API
+    DataBiosphere Data Storage System API
 
     # HTTP semantics
 
     The DSS API requires clients to follow certain HTTP protocol semantics that may require extra configuration in your
-    HTTP client. The reference CLI and SDK (https://hca.readthedocs.io/) is pre-configured to do this. If writing your own
+    HTTP client. The reference CLI and SDK (https://dbio.readthedocs.io/) is pre-configured to do this. If writing your own
     client, please note the following:
 
 
@@ -29,7 +29,7 @@ info:
 
 
     The following Python code demonstrates an example configuration of the popular Requests library per the above guidance:
-    
+
     ```
 
     import requests, requests.packages.urllib3.util.retry
@@ -47,7 +47,7 @@ info:
 
     s.mount('https://', a)
 
-    print(s.get("https://dss.data.humancellatlas.org").content)
+    print(s.get("https://dss.dev.ucsc-cgp-redwood.org").content)
 
     ```
 
@@ -95,7 +95,7 @@ info:
     [GitHub API](https://developer.github.com/v3/guides/traversing-with-pagination/),
     which is based on [RFC 5988](https://tools.ietf.org/html/rfc5988). When the results of an API call exceed the
     page size specified, the HTTP response will contain a `Link` header of the following form:
-    `Link: <https://dss.data.humancellatlas.org/v1/search?replica=aws&per_page=100&search_after=123>; rel="next"`.
+    `Link: <https://dss.dev.ucsc-cgp-redwood.org/v1/search?replica=aws&per_page=100&search_after=123>; rel="next"`.
     The URL in the header refers to the next page of the results to be fetched; if no `Link rel="next"` URL is
     included, then all results have been fetched. The client should recognize and parse the `Link` header
     appropriately according to RFC 5988, and retrieve the next page if requested by the user, or if all results
@@ -110,7 +110,7 @@ basePath: /v1
 produces:
   - application/json
 securityDefinitions:
-  dcpAuth:
+  OauthSecurity:
     description: >
       The following claims must be present in the JWT:
       - '{{OIDC_GROUP_CLAIM}}': the user group this user belongs.
@@ -119,11 +119,14 @@ securityDefinitions:
       - '{{OIDC_EMAIL_CLAIM}}': the email of the requester
     type: oauth2
     flow: implicit
-    authorizationUrl: https://auth.data.humancellatlas.org/authorize
+    authorizationUrl: {{AUTH_URL}}/authorize
     scopes:
       email: This scope value requests access to the email and email_verified Claims.
       openid: see http://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
       offline_access: see http://openid.net/specs/openid-connect-core-1_0.html#OfflineAccessPrivacy
+    x-audience: {{OIDC_AUDIENCE}}
+    x-email-claim: {{OIDC_EMAIL_CLAIM}}
+    x-group-claim: {{OIDC_GROUP_CLAIM}}
 paths:
   /search:
     post:
@@ -348,8 +351,8 @@ paths:
 
         This endpoint returns a HTTP redirect to another HTTP endpoint with the file contents.
 
-        NOTE When using the HCA CLI, this will stream the file to stdout and may need to be piped.  For example,
-          `hca dss get-file --uuid UUID --replica aws > result.txt`
+        NOTE When using the DataBiosphere DSS CLI, this will stream the file to stdout and may need to be piped.  For example,
+          `dbio dss get-file --uuid UUID --replica aws > result.txt`
       parameters:
         - name: uuid
           in: path
@@ -482,7 +485,7 @@ paths:
                   - code
     put:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Create a new version of a file
       description: >
         Create a new version of a file with a given UUID. The contents of the file are provided by the client by
@@ -491,17 +494,17 @@ paths:
 
         The metadata fields required are:
 
-        - hca-dss-sha256: SHA-256 checksum of the file
+        - dss-sha256: SHA-256 checksum of the file
 
-        - hca-dss-sha1: SHA-1 checksum of the file
+        - dss-sha1: SHA-1 checksum of the file
 
-        - hca-dss-s3_etag: S3 ETAG checksum of the file.  See https://stackoverflow.com/q/12186993 for the
+        - dss-s3_etag: S3 ETAG checksum of the file.  See https://stackoverflow.com/q/12186993 for the
         general algorithm for how checksum is calculated.  For files smaller than 64MB, this is the MD5 checksum
         of the file.  For files larger than 64MB but smaller than 640,000MB, we use 64MB chunks.  For files larger than
         640,000MB, we use a chunk size equal to the total file size divided by 10000, rounded up to the nearest MB.
         MB, in this section, refers to 1,048,576 bytes.  Note that 640,000MB is not the same as 640GB!
 
-        - hca-dss-crc32c: CRC-32C checksum of the file
+        - dss-crc32c: CRC-32C checksum of the file
       parameters:
         - name: uuid
           in: path
@@ -643,7 +646,7 @@ paths:
   /subscriptions:
     get:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Retrieve a user\'s event subscriptions.
       description: |
         Return a list of associated subscriptions.
@@ -697,7 +700,7 @@ paths:
                   - code
     put:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Create an event subscription.
       description: >
         Register an HTTP endpoint that is to be notified when a given event occurs.
@@ -926,7 +929,7 @@ paths:
   /subscriptions/{uuid}:
     get:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Retrieve an event subscription given a UUID.
       description: >
         Given a subscription UUID, return the associated subscription.
@@ -981,7 +984,7 @@ paths:
                   - code
     delete:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Delete an event subscription.
       description: >
         Delete a registered event subscription. The associated query will no longer trigger a callback
@@ -1043,7 +1046,7 @@ paths:
     get:
       operationId: dss.api.collections.list_collections
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Retrieve a user's collections.
       description: >
         Return a list of a user's collections.
@@ -1133,7 +1136,7 @@ paths:
                   - code
     put:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Create a collection.
       description: >
         Create a new collection.
@@ -1213,7 +1216,7 @@ paths:
   /collections/{uuid}:
     get:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Retrieve a collection given a UUID.
       description: Given a collection UUID, return the associated collection object.
       parameters:
@@ -1266,7 +1269,7 @@ paths:
                   - code
     patch:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Update a collection.
       description: >
         Add or remove items from a collection. A specific version of the collection to update must be provided, and a
@@ -1429,7 +1432,7 @@ paths:
                   - code
     delete:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Delete a collection.
       description: >
         Delete a collection.
@@ -1729,7 +1732,7 @@ paths:
           $ref: '#/responses/GatewayTimeout'
     put:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Create a bundle
       description: >
         Create a new version of a bundle with a given UUID.  The list of file UUID and versions to be included must be
@@ -1876,7 +1879,7 @@ paths:
                   - code
     patch:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Update a bundle.
       description: >
         Add or remove files from a bundle. A specific version of the bundle to update must be provided, and a
@@ -2024,7 +2027,7 @@ paths:
                   - code
     delete:
       security:
-        - dcpAuth: []
+        - OauthSecurity: []
       summary: Delete a bundle or a specific bundle version
       description: >
         Delete the bundle with the given UUID. This deletion is applied across replicas.
