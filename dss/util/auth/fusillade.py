@@ -18,9 +18,6 @@ class Fusillade(Authorize):
         """
         This method maps out security flow for Auth with Fusillade
         """
-        if 'group' in authz_methods:
-            self.assert_required_parameters(kwargs, ['groups', 'token'])
-            self.assert_authorized_group(kwargs['groups'], kwargs['token'])
         if 'evaluate' in authz_methods:
             self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
             self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
@@ -38,8 +35,3 @@ class Fusillade(Authorize):
         if not resp_json.get('result'):
             raise DSSForbiddenException(title=f"User is not authorized to access this resource:\n{resp_json}")
 
-    def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
-        if token.get(Config.get_OIDC_group_claim()) in group:
-            return
-        logger.info(f"User not in authorized group: {group}, {token}")
-        raise DSSForbiddenException()

@@ -101,11 +101,18 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
+def assert_authorized_group(group: typing.List[str], token: dict) -> None:
+    if token.get(Config.get_OIDC_group_claim()) in group:
+        return
+    logger.info(f"User not in authorized group: {group}, {token}")
+    raise DSSForbiddenException()
+
+
 def assert_security(groups: typing.List[str]):
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            # connexion at this point has verified the jwt using TOKENINFO_FUNC
+            assert_authorized_group(groups, request.token_info)
             authz_handler = AuthHandler()
             authz_handler.security_flow(authz_methods=['groups'], groups=groups, token=request.token_info)
             return func(*args, **kwargs)
