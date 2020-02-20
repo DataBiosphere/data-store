@@ -255,18 +255,26 @@ The following environment variables must be set to enable user authentication an
 Also update `authorizationUrl` in `dss-api.yml` to point to an authorization endpoint that will return
 a valid JWT.
 
-Optional: To configure a custom swagger auth before deployment run:
 
-    python scripts/swagger_auth.py -c='{"/path": "call"}'
+#### Updating Swagger Authentication
 
-Alternatively, to configure auth for all swagger endpoints, you can run:
+It is optional to configure custom authentication and authorizatoin in a swagger file before deploying the
+data store. This can be done with the script `scripts/swagger_auth.py`. This script will load the swagger YML
+file, modify or add auth sections in the YML file, and add auth to various API endpoints.
+
+Auth is added to API endpoints using a key-value dictionary, where the keys are API endpoints and the values are
+HTTP actions taken on the endpoint, such as "put" and "get". The configuration dictionary can be specified on the
+command line or stored in a file.  To pass a configuration on the command line, use the `--config_security` or `-c`
+flag, and pass the values in a list of strings. For example:
+
+    python scripts/swagger_auth.py -c='{"/path": ["call"]}'
+
+Alternatively, auth can be set for all swagger endpoints by passing the `--secure` flag:
 
     python scripts/swagger_auth.py --secure
 
-Note: Removing auth from endpoints will currently break tests, however adding auth should be fine
+Note that **removing** auth from endpoints will currently break tests, however adding auth should be fine
 (`make test` should run successfully).
-
-Note: The auth config file for deployment can also be set in `environment.local` with `AUTH_CONFIG_FILE`.
 
 #### Configure Email Notifications
 
