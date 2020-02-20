@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 class AuthHandler:
     def __new__(cls, *args, **kwargs):
-        auth_backend = Config.get_auth_backend()
-        # keys in the Registry are in Pascal Case, (like how classes are named in python)
+        auth_backend = Config.get_auth_backend().lower()
         authz_class = authregistry.AuthRegistry.REGISTRY.get(auth_backend, None)
         if authz_class is None:
             raise DSSException(500, 'Error with Security Handler, unable to locate Auth Handler')
