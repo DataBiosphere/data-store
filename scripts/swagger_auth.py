@@ -175,7 +175,7 @@ def main(argv=sys.argv[1:]):
                         help='Change the swagger file to include auth on all endpoints.')
     parser.add_argument('-t', '--travis', dest="travis", action='store_true', default=False,
                         help='Run on travis to check that swagger has default auth.')
-    parser.add_argument('-n', '--auth-name', dest="auth_name", default="dcpAuth",
+    parser.add_argument('-n', '--auth-name', dest="auth_name", default="OauthSecurity",
                         help='The name of the security definition being added to protect endpoints.')
 
     o = parser.parse_args(argv)
