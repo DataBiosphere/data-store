@@ -41,7 +41,7 @@ before_script:
 trufflehog:
   stage: trufflehog
   script:
-    - pip install trufflehog
+    - pip install gitdb2==3.0.0 truffleHog==2.0.99 # https://github.com/dxa4481/truffleHog/issues/200
     - wget -O regex.json https://raw.githubusercontent.com/HumanCellAtlas/dcplib/master/components/trufflehog_regex_patterns.json
     - trufflehog --regex --rules regex.json --entropy=False https://github.com/DataBiosphere/data-store.git
 
