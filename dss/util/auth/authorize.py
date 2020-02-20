@@ -1,4 +1,7 @@
-class Authorize:
+from dss.util.auth import authregistry
+
+
+class Authorize(metaclass=authregistry.AuthRegistry):
     """ abstract class for authorization classes"""
     def __init__(self):
         pass
