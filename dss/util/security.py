@@ -7,20 +7,18 @@ import jwt
 import requests
 import typing
 
-from flask import request
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
+from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
 from dss.util.auth import AuthHandler
 
+logger = logging.getLogger(__name__)
 
 allowed_algorithms = ['RS256']
 gserviceaccount_domain = "iam.gserviceaccount.com"
-
-
-logger = logging.getLogger(__name__)
 
 # recycling the same session for all requests.
 session = requests.Session()
