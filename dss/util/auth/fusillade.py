@@ -17,13 +17,15 @@ class Fusillade(Authorize):
     def __init__(self):
         self.session = requests.Session()
 
-    def security_flow(self, authz_methods: typing.List[str], *args, **kwargs):
+    def security_flow(self, *args, **kwargs):
         """
         This method maps out security flow for Auth with Fusillade
+        Current implimentation of Fusillade 2.0 requires principals, actions, and resources
+        for all evaluation requests
         """
-        if 'evaluate' in authz_methods:
-            self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
-            self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
+        return  # we actually dont want to use this evaluation method at the moment, so just skip.
+        self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
+        self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
 
     def assert_authorized(self, principal: str,
                           actions: typing.List[str],

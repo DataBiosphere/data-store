@@ -13,7 +13,7 @@ class Authorize(metaclass=AuthRegistry):
     def __init__(self):
         pass
 
-    def security_flow(self, authz_methods: typing.List[str], *args, **kwargs):
+    def security_flow(self, *args, **kwargs):
         """
         This function maps out flow for a given security config
         """
