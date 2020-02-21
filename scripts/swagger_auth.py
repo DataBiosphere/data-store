@@ -35,7 +35,7 @@ full_auth = {"/search": ["post"],
 
 
 class SecureSwagger(object):
-    def __init__(self, infile: str=None, outfile: str=None, config: dict=None):
+    def __init__(self, infile: str=None, outfile: str=None, auth_name: str=None, config: dict=None):
         """
         A class for modifying a swagger yml file with auth on endpoints specified in
         a config file.
@@ -52,6 +52,7 @@ class SecureSwagger(object):
         self.infile = infile or os.path.join(pkg_root, 'dss-api.yml')
         self.intermediate_file = os.path.join(pkg_root, 'tmp.yml')
         self.outfile = outfile or os.path.join(pkg_root, 'dss-api.yml')
+        self.auth_name = auth_name
         self.config = default_auth if config is None else config
 
         for endpoint in self.config:
@@ -127,13 +128,13 @@ class SecureSwagger(object):
             with open(self.infile, 'r') as r:
                 for line in r:
                     # ignore security lines already in the swagger yml
-                    if not (line.startswith('      security:') or line.startswith('        - dcpAuth: []')):
+                    if not (line.startswith('      security:') or line.startswith(f'        - {self.auth_name}: []')):
 
                         w.write(line)
                         # returns true based on config file paths
                         if self.security_line(line, checking_flags=True):
                             w.write('      security:\n')
-                            w.write('        - dcpAuth: []\n')
+                            w.write(f'        - {self.auth_name}: []\n')
 
         # the contents of the intermediate file become the contents of the output file
         if os.path.exists(self.outfile):
@@ -174,13 +175,16 @@ def main(argv=sys.argv[1:]):
                         help='Change the swagger file to include auth on all endpoints.')
     parser.add_argument('-t', '--travis', dest="travis", action='store_true', default=False,
                         help='Run on travis to check that swagger has default auth.')
+    parser.add_argument('-n', '--auth-name', dest="auth_name", default="OauthSecurity",
+                        help='The name of the security definition being added to protect endpoints.')
+
     o = parser.parse_args(argv)
 
     if o.travis:
         ensure_auth_defaults_are_still_set()
     else:
         config = full_auth if o.secure else o.config_security
-        s = SecureSwagger(o.input_swagger, o.output_swagger, config)
+        s = SecureSwagger(o.input_swagger, o.output_swagger, o.auth_name, config)
         s.make_swagger_from_authconfig()
 
 
