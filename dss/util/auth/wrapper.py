@@ -19,7 +19,8 @@ class AuthWrapper(object):
         Get name of Authorize subclass the user wants, verify it is a registered auth handler,
         create an instance of it, and return the instance.
 
-        We don't define this in __init__ bc __init__ cannot return anything, as it automatically returns an AuthWrapper object.
+        We don't define this in __init__ bc __init__ cannot return anything, as it automatically
+        returns an AuthWrapper object.
         Instead, we do this in __new__, which allows us to return an object of a different type.
         If __new__ returns anything other than the AuthWrapper type, then __init__ is not called.
         """
