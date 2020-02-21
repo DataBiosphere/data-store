@@ -106,10 +106,11 @@ def assert_authorized_group(group: typing.List[str], token: dict) -> None:
     raise DSSForbiddenException()
 
 
-def assert_security(groups: typing.List[str]):
+def assert_security(*dargs, **dkwargs):
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            groups = dkwargs.get('groups') or dargs[0]  # use of args[0] is just for temp. compatibility
             assert_authorized_group(groups, request.token_info)
             authz_handler = AuthHandler()
             authz_handler.security_flow(authz_methods=['groups'], groups=groups, token=request.token_info)
