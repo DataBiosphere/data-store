@@ -4,13 +4,16 @@ import requests
 
 from dss import Config
 from dss.error import DSSForbiddenException
-from dss.util.auth.authorize import Authorize
+from .authorize import Authorize
 
 
 logger = logging.getLogger(__name__)
 
 
 class Fusillade(Authorize):
+    """
+    This class defines the Fusillade security flow.
+    """
     def __init__(self):
         self.session = requests.Session()
 

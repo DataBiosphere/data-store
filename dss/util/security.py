@@ -13,7 +13,7 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from dss.util.auth import AuthHandler
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def assert_security(groups: typing.List[str]):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             assert_authorized_group(groups, request.token_info)
-            authz_handler = AuthHandler()
+            authz_handler = AuthWrapper()
             authz_handler.security_flow(authz_methods=['groups'], groups=groups, token=request.token_info)
             return func(*args, **kwargs)
 
