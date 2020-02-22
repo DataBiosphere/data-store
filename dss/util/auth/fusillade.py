@@ -20,6 +20,7 @@ class Fusillade(authorize.Authorize):
         Current implimentation of Fusillade 2.0 requires principals, actions, and resources
         for all evaluation requests
         """
+        super().security_flow(*args, **kwargs)
         return  # we actually dont want to use this evaluation method at the moment, so just skip.
         self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
         self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])

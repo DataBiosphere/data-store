@@ -13,6 +13,7 @@ class Auth0(authorize.Authorize):
                               'read': self._read}
 
     def security_flow(self, *args, **kwargs):
+        super().security_flow(args, kwargs)
         requested_method = kwargs.get('auth_method').lower()
         if requested_method is None or requested_method not in self.valid_methods.keys():
             raise DSSException(500, 'Unable to locate auth_method for request')
