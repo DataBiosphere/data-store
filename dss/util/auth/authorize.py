@@ -23,7 +23,7 @@ class Authorize(metaclass=AuthRegistry):
         This function maps out flow for a given security config
         Be sure to call it from the derived class to ensure the JWT has groups set
         """
-        self.assert_required_parameters(kwargs,['groups', 'token'])
+        self.assert_required_parameters(kwargs, ['groups', 'token'])
         groups = kwargs.get('security_groups')
         token = kwargs.get('security_token')
         self.assert_authorized_group(groups, token)
