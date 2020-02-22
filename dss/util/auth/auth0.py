@@ -1,10 +1,10 @@
 import requests
 
 from dss.error import DSSForbiddenException, DSSException
-from . import authorize
+from .authorize import Authorize
 
 
-class Auth0(authorize.Authorize):
+class Auth0(Authorize):
     def __init__(self):
         self.session = requests.Session()
         self.valid_methods = {'create': self._create,
@@ -16,7 +16,9 @@ class Auth0(authorize.Authorize):
         super().security_flow(args, kwargs)
         requested_method = kwargs.get('auth_method').lower()
         if requested_method is None or requested_method not in self.valid_methods.keys():
-            raise DSSException(500, 'Unable to locate auth_method for request')
+            err = f'Unable to locate auth_method {requested_method} for request, valid methods are: '
+            err += f'{", ".join(self.vaid_methods)}'
+            raise DSSException(500, err)
         else:
             executed_method = self.valid_methods[requested_method]
             executed_method(*args, **kwargs)

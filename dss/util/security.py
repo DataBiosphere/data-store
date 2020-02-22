@@ -13,7 +13,7 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from dss.util.auth import AuthHandler
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
