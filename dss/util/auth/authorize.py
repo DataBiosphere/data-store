@@ -1,13 +1,9 @@
 import typing
 import logging
 
-<<<<<<< HEAD
-from .authregistry import AuthRegistry
-=======
 from dss.config import Config
 from dss.error import DSSForbiddenException, DSSException
-from . import authregistry
->>>>>>> amar-meth-reg-2
+from .authregistry import AuthRegistry
 
 logger = logging.getLogger(__name__)
 

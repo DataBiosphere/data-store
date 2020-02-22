@@ -107,7 +107,7 @@ def assert_security(*decorator_args, **decorator_kwargs):
             decorator_kwargs['security_token'] = request.token_info
             if decorator_kwargs.get('security_groups') is None:
                 decorator_kwargs['security_groups'] = decorator_args[0]
-            authz_handler = AuthHandler()
+            authz_handler = AuthWrapper()
             authz_handler.security_flow(*decorator_args, **decorator_kwargs)
             return func(*args, **kwargs)
 
