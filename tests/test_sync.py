@@ -454,10 +454,9 @@ class TestSyncDaemonLargeManifests(unittest.TestCase, DSSSyncMixin):
         bundle_uuid = str(uuid.uuid4())
         bundle_version = str(datetime.datetime.utcnow().strftime("%Y-%m-%dT%H%M%S.%fZ"))
         with mock.patch.object(bundles_api.security, "request"):
-            with mock.patch.object(bundles_api.security, "assert_authorized_group"):
-                with mock.patch.object(bundles_api, "nestedcontext"):
-                    with self.flask_app.test_request_context('/'):
-                        bundles_api.put(bundle_uuid, "aws", dict(creator_uid=1, files=files), bundle_version)
+            with mock.patch.object(bundles_api, "nestedcontext"):
+                with self.flask_app.test_request_context('/'):
+                    bundles_api.put(bundle_uuid, "aws", dict(creator_uid=1, files=files), bundle_version)
 
         @eventually(timeout=600, interval=10, errors={AssertionError})
         def check_dest():
