@@ -19,9 +19,13 @@ class Fusillade(Authorize):
 
     def security_flow(self, *args, **kwargs):
         """
-        This method maps out security flow for Auth with Fusillade
-        Current implimentation of Fusillade 2.0 requires principals, actions, and resources
-        for all evaluation requests
+        This method maps out security flow for Auth with Fusillade.
+
+        The current implementation of Fusillade (2.0+) uses three pieces of information
+        to evaluate authorization: principals, actions, and resources.
+
+        However, we have overridden this with a simpler authentication-based
+        authorization layer that just checks for membership in a group.
         """
         # verify JWT was populated correctly
         self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
@@ -29,7 +33,11 @@ class Fusillade(Authorize):
         token = kwargs.get('security_token')
         self.assert_authorized_group(groups, token)
 
-        return  # we actually dont want to use this evaluation method at the moment, so just skip.
+        return
+        
+        # If we were using Fusillade's evaluate endpoint,
+        # this is where we would extract relevant information
+        # from the security decorator.
         self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
         self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
 
