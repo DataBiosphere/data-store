@@ -13,7 +13,7 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from dss.util.auth import AuthHandler
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -99,20 +99,16 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
-def assert_authorized_group(group: typing.List[str], token: dict) -> None:
-    if token.get(Config.get_OIDC_group_claim()) in group:
-        return
-    logger.info(f"User not in authorized group: {group}, {token}")
-    raise DSSForbiddenException()
-
-
-def assert_security(groups: typing.List[str]):
+def assert_security(*decorator_args, **decorator_kwargs):
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            assert_authorized_group(groups, request.token_info)
-            authz_handler = AuthHandler()
-            authz_handler.security_flow(authz_methods=['groups'], groups=groups, token=request.token_info)
+            decorator_kwargs.update(kwargs)
+            decorator_kwargs['security_token'] = request.token_info
+            if decorator_kwargs.get('security_groups') is None:
+                decorator_kwargs['security_groups'] = decorator_args[0]
+            authz_handler = AuthWrapper()
+            authz_handler.security_flow(*decorator_args, **decorator_kwargs)
             return func(*args, **kwargs)
 
         return wrapper

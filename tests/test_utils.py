@@ -6,6 +6,7 @@ import sys
 import unittest
 from unittest import mock
 
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -15,6 +16,7 @@ from dss.config import Replica
 from dss.logging import configure_test_logging
 from dss.util import UrlBuilder, security, multipart_parallel_upload
 from dss.util.aws import ARN
+from dss.util.auth.fusillade import Fusillade
 from tests import UNAUTHORIZED_GCP_CREDENTIALS, get_service_jwt
 from tests.infra import testmode
 
@@ -97,6 +99,7 @@ class TestUrlBuilder(unittest.TestCase):
 
 @testmode.standalone
 class TestSecurity(unittest.TestCase):
+    fus_handler = Fusillade()
 
     @classmethod
     def setUpClass(cls):
@@ -128,7 +131,7 @@ class TestSecurity(unittest.TestCase):
                              ]
         for token_info in valid_token_infos:
             with self.subTest(token_info):
-                security.assert_authorized_group(['hca', 'public'], token_info)
+                self.fus_handler.assert_authorized_group(['hca', 'public'], token_info)
 
     def test_not_authorizated_group(self):
         invalid_token_info = [{'sub': "travis-test@human-cell-atlas-travis-test.gmail.com"},
@@ -140,7 +143,7 @@ class TestSecurity(unittest.TestCase):
         for token_info in invalid_token_info:
             with self.subTest(token_info):
                 with self.assertRaises(DSSForbiddenException):
-                    security.assert_authorized_group(['hca'], token_info)
+                    self.fus_handler.assert_authorized_group(['hca'], token_info)
 
     @mock.patch('dss.Config._OIDC_AUDIENCE', new=["https://dev.data.humancellatlas.org/",
                                                   "https://data.humancellatlas.org/"])
