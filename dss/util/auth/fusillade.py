@@ -24,7 +24,7 @@ class Fusillade(Authorize):
         for all evaluation requests
         """
         # verify JWT was populated correctly
-        self.assert_required_parameters(kwargs, ['groups', 'token'])
+        self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
         groups = kwargs.get('security_groups')
         token = kwargs.get('security_token')
         self.assert_authorized_group(groups, token)
