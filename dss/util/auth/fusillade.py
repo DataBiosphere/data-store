@@ -23,7 +23,12 @@ class Fusillade(Authorize):
         Current implimentation of Fusillade 2.0 requires principals, actions, and resources
         for all evaluation requests
         """
-        super().security_flow(*args, **kwargs)
+        # verify JWT was populated correctly
+        self.assert_required_parameters(kwargs, ['groups', 'token'])
+        groups = kwargs.get('security_groups')
+        token = kwargs.get('security_token')
+        self.assert_authorized_group(groups, token)
+
         return  # we actually dont want to use this evaluation method at the moment, so just skip.
         self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
         self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
@@ -40,3 +45,9 @@ class Fusillade(Authorize):
         resp_json = resp.json()
         if not resp_json.get('result'):
             raise DSSForbiddenException(title=f"User is not authorized to access this resource:\n{resp_json}")
+
+    def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
+        if token.get(Config.get_OIDC_group_claim()) in group:
+            return
+        logger.info(f"User not in authorized group: {group}, {token}")
+        raise DSSForbiddenException()

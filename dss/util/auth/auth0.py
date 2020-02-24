@@ -13,7 +13,7 @@ class Auth0(Authorize):
                               'read': self._read}
 
     def security_flow(self, *args, **kwargs):
-        super().security_flow(args, kwargs)
+        #  TODO add some type of jwt inspection
         requested_method = kwargs.get('auth_method').lower()
         if requested_method is None or requested_method not in self.valid_methods.keys():
             err = f'Unable to locate auth_method {requested_method} for request, valid methods are: '
