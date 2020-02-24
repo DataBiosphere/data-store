@@ -37,4 +37,3 @@ class Authorize(metaclass=AuthRegistry):
                 err = f'Missing parameters within {provided_params.keys()}, unable to locate {param},'
                 raise DSSException(500, title, err)
         return
-
