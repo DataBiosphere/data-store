@@ -34,7 +34,7 @@ class Fusillade(Authorize):
         self.assert_authorized_group(groups, token)
 
         return
-        
+
         # If we were using Fusillade's evaluate endpoint,
         # this is where we would extract relevant information
         # from the security decorator.
