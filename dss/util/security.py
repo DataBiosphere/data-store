@@ -108,7 +108,7 @@ def assert_security(*decorator_args, **decorator_kwargs):
             decorator_kwargs.update(kwargs)
             # Wrapper function args get turned into kwargs, then go into decorator kwargs
             sig = inspect.signature(wrapper)
-            for i,p in enumerate(sig._parameters):
+            for i, p in enumerate(sig._parameters):
                 decorator_kwargs[p] = args[i]
             # Pass all args/kwargs to AuthWrapper
             authz_handler = AuthWrapper()
