@@ -2,17 +2,18 @@
 import base64
 import json
 import logging
-
 import functools
 import jwt
 import requests
 import typing
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -98,34 +99,18 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
-def assert_authorized_group(group: typing.List[str], token: dict) -> None:
-    if token.get(Config.get_OIDC_group_claim()) in group:
-        return
-    logger.info(f"User not in authorized group: {group}, {token}")
-    raise DSSForbiddenException()
-
-
-def authorized_group_required(groups: typing.List[str]):
+def assert_security(*decorator_args, **decorator_kwargs):
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            assert_authorized_group(groups, request.token_info)
+            decorator_kwargs.update(kwargs)
+            decorator_kwargs['security_token'] = request.token_info
+            if decorator_kwargs.get('security_groups') is None:
+                decorator_kwargs['security_groups'] = decorator_args[0]
+            authz_handler = AuthWrapper()
+            authz_handler.security_flow(*decorator_args, **decorator_kwargs)
             return func(*args, **kwargs)
 
         return wrapper
 
     return real_decorator
-
-
-def assert_authorized(principal: str,
-                      actions: typing.List[str],
-                      resources: typing.List[str]):
-    resp = session.post(f"{Config.get_authz_url()}/v1/policies/evaluate",
-                        headers=Config.get_ServiceAccountManager().get_authorization_header(),
-                        json={"action": actions,
-                              "resource": resources,
-                              "principal": principal})
-    resp.raise_for_status()
-    resp_json = resp.json()
-    if not resp_json.get('result'):
-        raise DSSForbiddenException(title=f"User is not authorized to access this resource:\n{resp_json}")

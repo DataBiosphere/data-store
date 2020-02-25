@@ -16,13 +16,10 @@
       "Resource": [
         "arn:aws:s3:::$DSS_S3_BUCKET/*",
         "arn:aws:s3:::$DSS_S3_BUCKET_TEST/*",
-        "arn:aws:s3:::$DSS_S3_BUCKET_INTEGRATION/*",
-        "arn:aws:s3:::$DSS_S3_BUCKET_STAGING/*",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET/*",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST/*",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_INTEGRATION/*",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_STAGING/*",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST_USER/*"
+        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST_USER/*",
+        "arn:aws:s3:::$DSS_CLI_BUCKET_TEST/*"
       ]
     },
     {
@@ -36,12 +33,9 @@
       "Resource": [
         "arn:aws:s3:::$DSS_S3_BUCKET",
         "arn:aws:s3:::$DSS_S3_BUCKET_TEST",
-        "arn:aws:s3:::$DSS_S3_BUCKET_INTEGRATION",
-        "arn:aws:s3:::$DSS_S3_BUCKET_STAGING",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_INTEGRATION",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_STAGING"
+        "arn:aws:s3:::$DSS_CLI_BUCKET_TEST"
       ]
     },
     {
@@ -54,26 +48,27 @@
         "arn:aws:s3:::$DSS_S3_BUCKET", "arn:aws:s3:::$DSS_S3_BUCKET/*",
         "arn:aws:s3:::$DSS_S3_BUCKET_TEST", "arn:aws:s3:::$DSS_S3_BUCKET_TEST/*",
         "arn:aws:s3:::$DSS_S3_BUCKET_TEST_FIXTURES", "arn:aws:s3:::$DSS_S3_BUCKET_TEST_FIXTURES/*",
-        "arn:aws:s3:::$DSS_S3_BUCKET_INTEGRATION", "arn:aws:s3:::$DSS_S3_BUCKET_INTEGRATION/*",
-        "arn:aws:s3:::$DSS_S3_BUCKET_STAGING", "arn:aws:s3:::$DSS_S3_BUCKET_STAGING/*",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET", "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET/*",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST", "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST/*",
         "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST_USER", "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_TEST_USER/*",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_INTEGRATION", "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_INTEGRATION/*",
-        "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_STAGING", "arn:aws:s3:::$DSS_S3_CHECKOUT_BUCKET_STAGING/*"
+        "arn:aws:s3:::$DSS_FLASHFLOOD_BUCKET", "arn:aws:s3:::$DSS_FLASHFLOOD_BUCKET/*",
+        "arn:aws:s3:::$DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE","arn:aws:s3:::$DSS_TERRAFORM_BACKEND_BUCKET_TEMPLATE/*",
+        "arn:aws:s3:::$DSS_CLI_BUCKET_TEST","arn:aws:s3:::$DSS_CLI_BUCKET_TEST/*"
+
       ]
     },
     {
       "Effect": "Allow",
-      "Action": "iam:ListRoles",
+      "Action": [
+        "iam:ListRoles"
+      ],
       "Resource": "arn:aws:iam::$account_id:role/"
     },
     {
       "Effect": "Allow",
       "Action": "logs:*",
       "Resource": [
-        "arn:aws:logs:*:$account_id:log-group:dss-*-$DSS_DEPLOYMENT_STAGE*",
-        "arn:aws:logs:*:$account_id:log-group:dss-test-logging*"
+        "arn:aws:logs:*:$account_id:log-group:*"
       ]
     },
     {
@@ -85,12 +80,11 @@
       ],
       "Resource": [
         "arn:aws:lambda:*:$account_id:function:dss-*",
-        "arn:aws:es:*:$account_id:domain/dss-index-dev", "arn:aws:es:*:$account_id:domain/dss-index-dev/*",
-        "arn:aws:es:*:$account_id:domain/dss-index-integration", "arn:aws:es:*:$account_id:domain/dss-index-integration/*",
-        "arn:aws:es:*:$account_id:domain/dss-index-staging", "arn:aws:es:*:$account_id:domain/dss-index-staging/*",
+        "arn:aws:es:*:$account_id:domain/*", "arn:aws:es:*:$account_id:domain/*/*",
         "arn:aws:sns:*:$account_id:dss-*",
         "arn:aws:sns:*:$account_id:domovoi-s3-events-*",
-        "arn:aws:states:*:$account_id:*:dss-*"
+        "arn:aws:states:*:$account_id:*:dss-*",
+        "arn:aws:lambda:*:$account_id:layer:*"
       ],
       "Effect": "Allow"
     },
@@ -107,26 +101,26 @@
         "arn:aws:dynamodb:*:$account_id:table/scalability_test_result",
         "arn:aws:dynamodb:*:$account_id:table/scalability_test/stream/*",
         "arn:aws:dynamodb:*:$account_id:table/dss-async-state-dev",
-        "arn:aws:dynamodb:*:$account_id:table/dss-async-state-integration",
-        "arn:aws:dynamodb:*:$account_id:table/dss-async-state-staging",
         "arn:aws:dynamodb:*:$account_id:table/dss-subscriptions-v2-*-dev",
-        "arn:aws:dynamodb:*:$account_id:table/dss-subscriptions-v2-*-integration",
-        "arn:aws:dynamodb:*:$account_id:table/dss-subscriptions-v2-*-staging",
         "arn:aws:dynamodb:*:$account_id:table/dss-collections-db-*"
       ]
     },
     {
       "Effect": "Allow",
       "Action": [
-        "lambda:List*",
-        "lambda:CreateEventSourceMapping",
-        "lambda:GetEventSourceMapping",
-        "lambda:TagResource",
         "apigateway:*",
         "dynamodb:ListTables",
         "dynamodb:Query",
         "dynamodb:DescribeTable",
-        "sqs:ListQueues"
+        "lambda:List*",
+        "lambda:CreateEventSourceMapping",
+        "lambda:GetEventSourceMapping",
+        "lambda:TagResource",
+        "route53:*",
+        "sqs:ListQueues",
+        "tag:GetTagKeys",
+        "tag:GetResources",
+        "tag:GetTagValues"
 	],
       "Resource": "*"
     },
@@ -144,7 +138,7 @@
     {
       "Effect": "Allow",
       "Action": "sqs:*",
-      "Resource": "arn:aws:sqs:*:$account_id:dss-dlq-*"
+      "Resource": "arn:aws:sqs:*:$account_id:*"
     },
     {
       "Effect": "Allow",
@@ -171,9 +165,7 @@
       ],
       "Resource": [
         "arn:aws:sqs:*:$account_id:dss-notify-test-*",
-        "arn:aws:sqs:*:$account_id:dss-notify-dev-*",
-        "arn:aws:sqs:*:$account_id:dss-notify-integration-*",
-        "arn:aws:sqs:*:$account_id:dss-notify-staging-*"
+        "arn:aws:sqs:*:$account_id:dss-notify-dev-*"
       ]
     },
     {
@@ -181,14 +173,15 @@
       "Action": "secretsmanager:Get*",
       "Resource": "arn:aws:secretsmanager:*:$account_id:secret:$DSS_SECRETS_STORE/*"
     },
+        {
+      "Effect": "Allow",
+      "Action": "ssm:*",
+      "Resource": "arn:aws:ssm:*:$account_id:parameter/$DSS_PARAMETER_STORE/*"
+    },
     {
       "Effect": "Allow",
-      "Action": [
-        "tag:GetTagKeys",
-        "tag:GetResources",
-        "tag:GetTagValues"
-      ],
-      "Resource": "*"
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::$account_id:role/dss-*"
     }
   ]
 }
