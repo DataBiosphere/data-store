@@ -102,7 +102,7 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
-def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
+def assert_authorized_group(group: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given group under the group claim key"""
     if token.get(Config.get_OIDC_group_claim()) in group:
         return
