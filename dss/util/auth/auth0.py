@@ -35,14 +35,7 @@ class Auth0(Authorize):
             executed_method(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
-        # Create access is granted to users who are
-        # members of the appropriate group.
-        # OIDC group claim set in configuration.
-        # (authentication-based authorization)
-        self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
-        groups = kwargs.get('security_groups')
-        token = kwargs.get('security_token')
-        self.assert_authorized_group(groups, token)
+        # Requires checking group
         return
 
     def _read(self, *args, **kwargs):
