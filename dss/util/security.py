@@ -13,7 +13,6 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,7 @@ def get_public_keys(openid_provider):
 
 
 def verify_jwt(token: str) -> typing.Optional[typing.Mapping]:
+    """Internal method used by Connexion to verify JWT tokens"""
     try:
         unverified_token = jwt.decode(token, verify=False)
     except jwt.DecodeError:
@@ -77,6 +77,7 @@ def verify_jwt(token: str) -> typing.Optional[typing.Mapping]:
 
 
 def get_token_email(token_info: typing.Mapping[str, typing.Any]) -> str:
+    """Get the email from a JWT token"""
     try:
         email_claim = Config.get_OIDC_email_claim()
         return token_info.get(email_claim) or token_info['email']
@@ -86,7 +87,8 @@ def get_token_email(token_info: typing.Mapping[str, typing.Any]) -> str:
 
 def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     """
-    Must be either `Config.get_openid_provider()` or in `Config.get_trusted_google_projects()`
+    Ensure that a JWT token contains a valid issuer under the "iss" key.
+    Must be either `Config.get_openid_provider()` or in `Config.get_trusted_google_projects()`.
     :param token: dict
     """
     issuer = token['iss']
@@ -98,6 +100,16 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     logger.info(f"Token issuer not authorized: {issuer}")
     raise DSSForbiddenException()
 
+
+def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
+    """Assert that a JWT token contains the given group under the group claim key"""
+    if token.get(Config.get_OIDC_group_claim()) in group:
+        return
+    logger.info(f"User not in authorized group: {group}, {token}")
+    raise DSSForbiddenException()
+
+
+from dss.util.auth import AuthWrapper
 
 def assert_security(*decorator_args, **decorator_kwargs):
     def real_decorator(func):
