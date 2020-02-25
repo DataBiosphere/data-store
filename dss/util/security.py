@@ -13,6 +13,7 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +109,6 @@ def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
     logger.info(f"User not in authorized group: {group}, {token}")
     raise DSSForbiddenException()
 
-
-from dss.util.auth import AuthWrapper
 
 def assert_security(*decorator_args, **decorator_kwargs):
     def real_decorator(func):
