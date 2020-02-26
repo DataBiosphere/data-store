@@ -100,7 +100,12 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
 
 
 def assert_security(*decorator_args, **decorator_kwargs):
+    # Note: we use 3 total layers of function wrappers here,
+    # not the usual 2 when wrapping functions, because the
+    # wrappers we are defining take *args and **kwargs.
     def real_decorator(func):
+        # Use of functools.wraps ensures that function names
+        # and docstrings are passed through correctly.
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             decorator_kwargs.update(kwargs)
