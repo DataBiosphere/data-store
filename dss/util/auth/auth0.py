@@ -6,7 +6,7 @@ from .authorize import Authorize
 
 class Auth0(Authorize):
     """
-    Implements the Auth0 security flow, which implents different
+    Implements the Auth0 security flow, which implements different
     authorization checks based on whether operations are
     create/read/update/delete operations.
     """
