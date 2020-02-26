@@ -23,7 +23,14 @@ class Fusillade(Authorize):
         Current implimentation of Fusillade 2.0 requires principals, actions, and resources
         for all evaluation requests
         """
-        # verify JWT was populated correctly
+        # Get token
+        decorator_kwargs['security_token'] = request.token_info
+
+        # Set security_groups using first argument, if kwarg not present
+        if kwargs.get('security_groups') is None:
+             kwargs['security_groups'] = args[0]
+
+        # Verify JWT was populated correctly
         self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
         groups = kwargs.get('security_groups')
         token = kwargs.get('security_token')
