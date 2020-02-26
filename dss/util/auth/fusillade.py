@@ -30,7 +30,7 @@ class Fusillade(Authorize):
 
         # Set security_groups using first argument, if kwarg not present
         if kwargs.get('security_groups') is None:
-             kwargs['security_groups'] = args[0]
+            kwargs['security_groups'] = args[0]
 
         # Verify JWT was populated correctly
         self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
