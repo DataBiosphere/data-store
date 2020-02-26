@@ -143,7 +143,7 @@ class TestSecurity(unittest.TestCase):
         for token_info in invalid_token_info:
             with self.subTest(token_info):
                 with self.assertRaises(DSSForbiddenException):
-                    self.fus_handler.assert_authorized_group(['hca'], token_info)
+                    self.fus_handler.assert_authorized_group(['dbio'], token_info)
 
     @mock.patch('dss.Config._OIDC_AUDIENCE', new=["https://dev.data.humancellatlas.org/",
                                                   "https://data.humancellatlas.org/"])
