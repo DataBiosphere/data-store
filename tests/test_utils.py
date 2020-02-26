@@ -126,12 +126,12 @@ class TestSecurity(unittest.TestCase):
                     security.assert_authorized_issuer(issuer)
 
     def test_authorizated_group(self):
-        valid_token_infos = [{os.environ['OIDC_GROUP_CLAIM']: 'hca'},
+        valid_token_infos = [{os.environ['OIDC_GROUP_CLAIM']: 'dbio'},
                              {os.environ['OIDC_GROUP_CLAIM']: 'public'}
                              ]
         for token_info in valid_token_infos:
             with self.subTest(token_info):
-                self.fus_handler.assert_authorized_group(['hca', 'public'], token_info)
+                self.fus_handler.assert_authorized_group(['dbio', 'public'], token_info)
 
     def test_not_authorizated_group(self):
         invalid_token_info = [{'sub': "travis-test@human-cell-atlas-travis-test.gmail.com"},
