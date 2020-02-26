@@ -106,7 +106,7 @@ def get_service_jwt(service_credentials, group: str = None, email=True, email_cl
     return signed_jwt
 
 
-def get_auth_header(real_header=True, authorized=True, group='hca', email=True, email_claim=False):
+def get_auth_header(real_header=True, authorized=True, group='dbio', email=True, email_claim=False):
     if authorized:
         credential_file = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
         with io.open(credential_file) as fh:
