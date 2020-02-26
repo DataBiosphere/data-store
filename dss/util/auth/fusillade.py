@@ -24,7 +24,7 @@ class Fusillade(Authorize):
         for all evaluation requests
         """
         # Get token
-        decorator_kwargs['security_token'] = request.token_info
+        kwargs['security_token'] = request.token_info
 
         # Set security_groups using first argument, if kwarg not present
         if kwargs.get('security_groups') is None:
