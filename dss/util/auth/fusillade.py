@@ -2,6 +2,8 @@ import logging
 import typing
 import requests
 
+from flask import request
+
 from dss import Config
 from dss.error import DSSForbiddenException
 from .authorize import Authorize
