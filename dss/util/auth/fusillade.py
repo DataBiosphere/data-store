@@ -31,7 +31,10 @@ class Fusillade(Authorize):
         self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
         groups = kwargs.get('security_groups')
         token = kwargs.get('security_token')
-        self.assert_authorized_group(groups, token)
+
+        # Import when this method is called, not when it is defined, to avoid circular imports
+        from ..security import assert_authorized_group
+        assert_authorized_group(groups, token)
 
         return
 
@@ -53,9 +56,3 @@ class Fusillade(Authorize):
         resp_json = resp.json()
         if not resp_json.get('result'):
             raise DSSForbiddenException(title=f"User is not authorized to access this resource:\n{resp_json}")
-
-    def assert_authorized_group(self, group: typing.List[str], token: dict) -> None:
-        if token.get(Config.get_OIDC_group_claim()) in group:
-            return
-        logger.info(f"User not in authorized group: {group}, {token}")
-        raise DSSForbiddenException()
