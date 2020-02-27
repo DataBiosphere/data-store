@@ -367,7 +367,7 @@ class SecretsChecker(object):
 
         self.type = ['service_account']
         self.auth_url = os.getenv('AUTH_URL')
-        self.auth_uri = [f'{self.auth_url}/oauth/authorize']
+        self.auth_uri = [f'{self.auth_url}/authorize']
         self.token_uri = [f'{self.auth_url}/oauth/token']
 
         self.app_secret_name = os.environ['GOOGLE_APPLICATION_SECRETS_SECRETS_NAME']
