@@ -2,13 +2,11 @@ from dss import Config
 from dss.error import DSSException
 
 from .authregistry import AuthRegistry
-from .authorize import Authorize
-from .fusillade import Fusillade
 
 
 class AuthWrapper(object):
     """
-    This class transparently wraps whatever Authorize class the user needs.
+    This class transparently creates/returns whatever Authorize class the user needs.
 
     AuthWrapper is used in dss.util.security for doing security assertions.
     It uses the AuthRegistry class's registry and the auth handler specified
