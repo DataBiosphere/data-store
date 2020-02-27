@@ -40,7 +40,7 @@ class Auth0(Authorize):
             raise DSSException(500, err)
 
         # Dispatch to correct method
-        executed_method = self.valid_methods[requested_method]
+        executed_method = self.valid_methods[method]
         executed_method(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
