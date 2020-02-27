@@ -6,6 +6,7 @@ import functools
 import jwt
 import requests
 import typing
+import inspect
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -119,10 +120,17 @@ def assert_security(*decorator_args, **decorator_kwargs):
         # and docstrings are passed through correctly.
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            # Wrapper function kwargs go into decorator kwargs
             decorator_kwargs.update(kwargs)
-            decorator_kwargs['security_token'] = request.token_info
-            if decorator_kwargs.get('security_groups') is None:
-                decorator_kwargs['security_groups'] = decorator_args[0]
+            # Wrapper function args get turned into kwargs, then go into decorator kwargs
+            sig = inspect.signature(wrapper)
+            for i, p in enumerate(list(sig._parameters)):
+                try:
+                    decorator_kwargs[p] = args[i]
+                except IndexError:
+                    # Corner case: unspecified positional arg, using default value
+                    pass
+            # Pass all args/kwargs to AuthWrapper
             authz_handler = AuthWrapper()
             authz_handler.security_flow(*decorator_args, **decorator_kwargs)
             return func(*args, **kwargs)

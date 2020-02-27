@@ -2,6 +2,8 @@ import logging
 import typing
 import requests
 
+from flask import request
+
 from dss import Config
 from dss.error import DSSForbiddenException
 from .authorize import Authorize
@@ -27,7 +29,14 @@ class Fusillade(Authorize):
         However, we have overridden this with a simpler authentication-based
         authorization layer that just checks for membership in a group.
         """
-        # verify JWT was populated correctly
+        # Get token
+        kwargs['security_token'] = request.token_info
+
+        # Set security_groups using first argument, if kwarg not present
+        if kwargs.get('security_groups') is None:
+            kwargs['security_groups'] = args[0]
+
+        # Verify JWT was populated correctly
         self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
         groups = kwargs.get('security_groups')
         token = kwargs.get('security_token')
