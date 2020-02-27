@@ -40,7 +40,7 @@ class Fusillade(GroupCheckMixin):
         """
         if 'security_groups' in kwargs:
             groups = kwargs['security_groups']
-        elif len(args)>0:
+        elif len(args) > 0:
             groups = args[0]
         else:
             raise RuntimeError("Error: invalid arguments passed to Fusillade security_flow() method")
