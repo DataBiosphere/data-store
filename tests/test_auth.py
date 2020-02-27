@@ -29,6 +29,9 @@ class TestAuth(unittest.TestCase):
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
                 auth.security_flow(['dbio'])
+            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
+                auth = AuthWrapper()
+                auth.security_flow('create', ['dbio'])
 
     def test_unauthorized_group(self):
         invalid_token = {}
