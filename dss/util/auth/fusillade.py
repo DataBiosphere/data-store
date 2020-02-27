@@ -38,10 +38,12 @@ class Fusillade(GroupCheckMixin):
         However, we have overridden this with a simpler authentication-based
         authorization layer that just checks for membership in a group.
         """
-        if kwargs.get('security_groups') is None:
+        if 'security_groups' in kwargs:
+            groups = kwargs['security_groups']
+        elif len(args)>0:
             groups = args[0]
         else:
-            groups = kwargs['security_groups']
+            raise RuntimeError("Error: invalid arguments passed to Fusillade security_flow() method")
         self._assert_authorized_group(groups)
         return
 
