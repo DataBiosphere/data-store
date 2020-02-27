@@ -15,7 +15,7 @@ from tests.infra import testmode
 
 
 class TestAuth(unittest.TestCase):
-    """Test each Authorize class in dss.util.auth"""
+    """Test security flow for each Authorize class in dss.util.auth"""
 
     @classmethod
     def setUpClass(cls):
@@ -23,19 +23,28 @@ class TestAuth(unittest.TestCase):
 
     def test_authorized_group(self):
         valid_token = {os.environ['OIDC_GROUP_CLAIM']: 'dbio'}
-        with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
-            with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
+        with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
+
+            # Test that security flow succeeds for each auth backend
+            with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
                 auth.security_flow(['dbio'])
 
-    @mock.patch('dss.Config.get_auth_backend', new=lambda : 'fusillade')
     def test_unauthorized_group(self):
         invalid_token = {}
-        with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
-            with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
+        with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
+
+            # Test that security flow fails for each auth backend
+            with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
+                # Check failure due to empty token
                 with self.assertRaises(DSSForbiddenException):
                     auth = AuthWrapper()
                     auth.security_flow(['dbio'])
+
+                # Check failure due to invalid method signature
+                with self.assertRaises(RuntimeError):
+                    auth = AuthWrapper()
+                    auth.security_flow()
 
 if __name__ == "__main__":
     unittest.main()
