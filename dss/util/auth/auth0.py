@@ -15,7 +15,7 @@ class Auth0(Authorize):
         self.valid_methods = {'create': self._create,
                               'read': self._read,
                               'update': self._update,
-                              'destroy': self._destroy}
+                              'delete': self._delete}
 
     def security_flow(self, *args, **kwargs):
         """
@@ -24,14 +24,24 @@ class Auth0(Authorize):
         kwargs of this method, and used to call the correct method.
         """
         #  TODO add some type of jwt inspection
-        requested_method = kwargs.get('auth_method').lower()
-        if requested_method is None or requested_method not in self.valid_methods.keys():
+
+        # Get name of method to use
+        if 'auth_method' in kwargs:
+            method = kwargs['auth_method']
+        elif len(args) > 0:
+            method = args[0]
+        else:
+            raise RuntimeError("Error: invalid arguments passed to Auth0 security_flow() method")
+
+        # Ensure method is valid
+        if method is None or method not in self.valid_methods.keys():
             err = f'Unable to locate auth_method {requested_method} for request, valid methods are: '
             err += f'{", ".join(self.vaid_methods)}'
             raise DSSException(500, err)
-        else:
-            executed_method = self.valid_methods[requested_method]
-            executed_method(*args, **kwargs)
+
+        # Dispatch to correct method
+        executed_method = self.valid_methods[requested_method]
+        executed_method(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
