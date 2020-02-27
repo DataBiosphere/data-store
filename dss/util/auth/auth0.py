@@ -4,7 +4,7 @@ from dss.error import DSSForbiddenException, DSSException
 from .authorize import Authorize, GroupCheckMixin
 
 
-class Auth0(Authorize, GroupCheckMixin):
+class Auth0(GroupCheckMixin):
     """
     Implements the Auth0 security flow, which implements different
     authorization checks based on whether operations are

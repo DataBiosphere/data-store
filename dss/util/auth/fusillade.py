@@ -2,8 +2,6 @@ import logging
 import typing
 import requests
 
-from flask import request
-
 from dss import Config
 from dss.error import DSSForbiddenException
 from .authorize import Authorize, GroupCheckMixin
@@ -12,7 +10,7 @@ from .authorize import Authorize, GroupCheckMixin
 logger = logging.getLogger(__name__)
 
 
-class Fusillade(Authorize, GroupCheckMixin):
+class Fusillade(GroupCheckMixin):
     """
     This class defines the Fusillade security flow.
 
