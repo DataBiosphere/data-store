@@ -1,10 +1,10 @@
 import requests
 
 from dss.error import DSSForbiddenException, DSSException
-from .authorize import Authorize
+from .authorize import Authorize, GroupCheckMixin
 
 
-class Auth0(Authorize):
+class Auth0(Authorize, GroupCheckMixin):
     """
     Implements the Auth0 security flow, which implements different
     authorization checks based on whether operations are
@@ -19,10 +19,9 @@ class Auth0(Authorize):
 
     def security_flow(self, *args, **kwargs):
         """
-        Assert security decorator should have arguents specifying
-        type of operation (CRUD), which will be passed through
-        to these args/kwargs, and relay the call to the right method
-        in valid_methods.
+        Dispatch pattern: the assert_security decorator will specify
+        the type of operation (CRUD), which is passed through to the
+        kwargs of this method, and used to call the correct method.
         """
         #  TODO add some type of jwt inspection
         requested_method = kwargs.get('auth_method').lower()
@@ -35,7 +34,12 @@ class Auth0(Authorize):
             executed_method(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
-        # Requires checking group
+        """Auth checks for any 'create' API endpoint actions"""
+        if kwargs.get('security_groups') is None:
+            groups = args[0]
+        else:
+            groups = kwargs['security_groups']
+        self._assert_authorized_group(groups)
         return
 
     def _read(self, *args, **kwargs):

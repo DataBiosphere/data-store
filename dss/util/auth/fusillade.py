@@ -6,15 +6,26 @@ from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException
-from .authorize import Authorize
+from .authorize import Authorize, GroupCheckMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class Fusillade(Authorize):
+class Fusillade(Authorize, GroupCheckMixin):
     """
     This class defines the Fusillade security flow.
+
+    Main entry point is security_flow.
+    Arrgs and kwargs are passed in from the security decorator
+    @assert_security.
+
+    Keyword arguments:
+    - security_groups: list of allowed groups
+
+    Example:
+    @assert_security(['mygrp', 'myothergrp'])
+    def put(...)
     """
     def __init__(self):
         self.session = requests.Session()
@@ -23,28 +34,17 @@ class Fusillade(Authorize):
         """
         This method maps out security flow for Auth with Fusillade.
 
-        The current implementation of Fusillade (2.0+) uses three pieces of information
+        The current implementation of Fusillade (2.x) uses three pieces of information
         to evaluate authorization: principals, actions, and resources.
 
         However, we have overridden this with a simpler authentication-based
         authorization layer that just checks for membership in a group.
         """
-        # Get token
-        kwargs['security_token'] = request.token_info
-
-        # Set security_groups using first argument, if kwarg not present
         if kwargs.get('security_groups') is None:
-            kwargs['security_groups'] = args[0]
-
-        # Verify JWT was populated correctly
-        self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
-        groups = kwargs.get('security_groups')
-        token = kwargs.get('security_token')
-
-        # Import when this method is called, not when it is defined, to avoid circular imports
-        from ..security import assert_authorized_group
-        assert_authorized_group(groups, token)
-
+            groups = args[0]
+        else:
+            groups = kwargs['security_groups']
+        self._assert_authorized_group(groups)
         return
 
         # If we were using Fusillade's evaluate endpoint,

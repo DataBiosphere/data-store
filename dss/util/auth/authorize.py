@@ -1,5 +1,7 @@
 import typing
 import logging
+import requests
+from flask import request
 
 from dss.config import Config
 from dss.error import DSSForbiddenException, DSSException
@@ -36,4 +38,20 @@ class Authorize(metaclass=AuthRegistry):
                 title = "Missing Security Paramters"
                 err = f'Missing parameters within {provided_params.keys()}, unable to locate {param},'
                 raise DSSException(500, title, err)
+        return
+
+    @property
+    def token(self):
+        return request.token_info
+
+
+class GroupCheckMixin(Authorize):
+    """
+    Mixin class for Authorize sub-classes: add ability to
+    check for user membership in a given group.
+    """
+    def _assert_authorized_group(self, groups):
+        # Import when this method is called, not when it is defined, to avoid circular imports
+        from ..security import assert_authorized_group
+        assert_authorized_group(groups, self.token)
         return
