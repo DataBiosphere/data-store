@@ -42,7 +42,13 @@ serial_test:
 # A pattern rule that runs a single test script
 #
 $(tests): %.py : mypy lint
+	@if [[ "${DSS_TEST_MODE}" == *"integration"* ]]; then \
+		aws lambda delete-function-concurrency --function-name dss-notify-dev; \
+	fi
 	coverage run -p --source=dss $*.py $(DSS_UNITTEST_OPTS)
+	@if [[ "${DSS_TEST_MODE}" == *"integration"* ]]; then \
+		aws lambda put-function-concurrency --function-name dss-notify-dev --reserved-concurrent-executions 0; \
+	fi
 
 # Run standalone and integration tests
 #
@@ -64,6 +70,7 @@ scaletest:
 	./tests/scalability/scale_test_runner.py -r 10 -d 30
 
 deploy: check-env check-secrets deploy-chalice deploy-daemons
+	aws lambda put-function-concurrency --function-name dss-notify-dev --reserved-concurrent-executions 0
 
 force-deploy: deploy-chalice deploy-daemons
 
