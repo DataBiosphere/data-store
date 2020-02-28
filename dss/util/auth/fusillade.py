@@ -24,7 +24,7 @@ class Fusillade(Authorize):
     def __init__(self):
         self.session = requests.Session()
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         This method maps out security flow for Auth with Fusillade.
         We are not using Fusillade 2.x /evaluate endpoint, which would
