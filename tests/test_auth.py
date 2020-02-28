@@ -16,16 +16,10 @@ from tests.infra import testmode
 
 
 def get_group_claim_token(grp):
-    return {
-        os.environ['OIDC_GROUP_CLAIM']: grp
-    }
-
+    return {os.environ['OIDC_GROUP_CLAIM']: grp}
 
 def get_email_claim_token(eml):
-    return {
-        os.environ['OIDC_EMAIL_CLAIM']: eml
-    }
-
+    return {os.environ['OIDC_EMAIL_CLAIM']: eml}
 
 class TestAuthBase(unittest.TestCase):
     """
@@ -99,7 +93,7 @@ class TestFusilladeAuth(unittest.TestCase):
     """
 
     def test_authorized_security_flow(self):
-        valid_token = get_group_claim_token( 'dbio')
+        valid_token = get_group_claim_token('dbio')
         with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
 
             # Test that security flow succeeds for each auth backend
