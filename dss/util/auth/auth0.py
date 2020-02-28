@@ -35,8 +35,8 @@ class Auth0(GroupCheckMixin):
 
         # Ensure method is valid
         if method is None or method not in self.valid_methods.keys():
-            err = f'Unable to locate auth_method {requested_method} for request, valid methods are: '
-            err += f'{", ".join(self.vaid_methods)}'
+            err = f'Unable to locate auth_method {method} for request, valid methods are: '
+            err += f'{", ".join(self.valid_methods)}'
             raise DSSException(500, err)
 
         # Dispatch to correct method
