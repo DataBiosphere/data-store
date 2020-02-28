@@ -30,6 +30,7 @@ class Auth0(Authorize):
             method = kwargs['auth_method']
         elif len(args) > 0:
             method = args[0]
+            kwargs['auth_method'] = method
         else:
             raise RuntimeError("Error: invalid arguments passed to Auth0 security_flow() method")
 
@@ -39,16 +40,27 @@ class Auth0(Authorize):
             err += f'{", ".join(self.valid_methods)}'
             raise DSSException(500, err)
 
+        # Any further kwarg processing should happen
+        # from inside the method that needs that info,
+        # to limit specifications.
+
         # Dispatch to correct method
         executed_method = self.valid_methods[method]
         executed_method(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
-        if kwargs.get('security_groups') is None:
-            groups = args[0]
-        else:
+        # Get name of allowed groups
+        # (either security_groups kwarg
+        # or second positional arg)
+        if 'security_groups' in kwargs:
             groups = kwargs['security_groups']
+        elif len(args) > 1:
+            groups = args[1]
+            kwargs['security_groups'] = groups
+        else:
+            raise RuntimeError("Error: invalid arguments passed to Auth0 security_flow() method")
+
         self._assert_authorized_group(groups)
         return
 
