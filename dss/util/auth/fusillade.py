@@ -33,8 +33,7 @@ class Fusillade(Authorize):
         the allowed groups.
         """
         self.assert_required_parameters(kwargs, ['groups'])
-        groups = kwargs['groups']
-        self._assert_authorized_group(groups)
+        self._assert_authorized_group(kwargs['groups'])
         return
 
         # If using Fusillade's /evaluate endpoint:

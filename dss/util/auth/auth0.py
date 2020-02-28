@@ -43,8 +43,7 @@ class Auth0(Authorize):
     def _create(self, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
         self.assert_required_parameters(kwargs, ['groups'])
-        groups = kwargs['groups']
-        self._assert_authorized_group(groups)
+        self._assert_authorized_group(kwargs['groups'])
         return
 
     def _read(self, **kwargs):
