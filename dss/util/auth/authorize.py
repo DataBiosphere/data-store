@@ -103,7 +103,7 @@ class TokenEmailMixin(TokenMixin):
     def _assert_authorized_email(self, emails):
         """Verify user JWT token email matches specified emails"""
         from ..security import assert_authorized_email
-        assert_authorized_email(groups, self.token)
+        assert_authorized_email(emails, self.token)
         return
 
 
