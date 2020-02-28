@@ -14,40 +14,29 @@ class Fusillade(Authorize):
     """
     This class defines the Fusillade security flow.
 
-    Main entry point is security_flow.
-    Arrgs and kwargs are passed in from the security decorator
-    @assert_security.
-
-    Keyword arguments:
-    - security_groups: list of allowed groups
+    security_flow method keyword arguments:
+    groups : list of allowed groups
 
     Example:
-    @assert_security(['mygrp', 'myothergrp'])
+    @assert_security(groups=['dbio', 'myothrgrp'])
     def put(...)
     """
     def __init__(self):
         self.session = requests.Session()
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         This method maps out security flow for Auth with Fusillade.
-
-        The current implementation of Fusillade (2.x) uses three pieces of information
-        to evaluate authorization: principals, actions, and resources.
-
-        However, we have overridden this with a simpler authentication-based
-        authorization layer that just checks for membership in a group.
+        We are not using Fusillade 2.x /evaluate endpoint, which would
+        require principals actions, and resources. Instead, we go for
+        a simpler check that the user's token group claim is in one of
+        the allowed groups.
         """
-        if kwargs.get('security_groups') is None:
-            groups = args[0]
-        else:
-            groups = kwargs['security_groups']
-        self._assert_authorized_group(groups)
+        self.assert_required_parameters(kwargs, ['groups'])
+        self._assert_authorized_group(kwargs['groups'])
         return
 
-        # If we were using Fusillade's evaluate endpoint,
-        # this is where we would extract relevant information
-        # from the security decorator.
+        # If using Fusillade's /evaluate endpoint:
         self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
         self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
 

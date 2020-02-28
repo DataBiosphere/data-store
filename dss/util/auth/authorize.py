@@ -30,7 +30,7 @@ class AuthorizeBase(metaclass=AuthRegistry):
     def __init__(self):
         pass
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         This function maps out flow for a given security config
         """

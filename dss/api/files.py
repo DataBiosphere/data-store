@@ -188,7 +188,7 @@ def _verify_checkout(
 
 
 @dss_handler
-@security.assert_security(['dbio'])
+@security.assert_security(groups=['dbio'])
 def put(uuid: str, json_request_body: dict, version: str):
     class CopyMode(Enum):
         NO_COPY = auto()
