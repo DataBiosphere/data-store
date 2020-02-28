@@ -17,22 +17,15 @@ class Auth0(Authorize):
                               'update': self._update,
                               'delete': self._delete}
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         Dispatch pattern: the assert_security decorator will specify
         the type of operation (CRUD), which is passed through to the
         kwargs of this method, and used to call the correct method.
         """
         #  TODO add some type of jwt inspection
-
-        # Get name of method to use
-        if 'auth_method' in kwargs:
-            method = kwargs['auth_method']
-        elif len(args) > 0:
-            method = args[0]
-            kwargs['auth_method'] = method
-        else:
-            raise RuntimeError("Error: invalid arguments passed to Auth0 security_flow() method")
+        self.assert_required_parameters(kwargs, ['method'])
+        method = kwargs['method']
 
         # Ensure method is valid
         if method is None or method not in self.valid_methods.keys():
@@ -40,29 +33,20 @@ class Auth0(Authorize):
             err += f'{", ".join(self.valid_methods)}'
             raise DSSException(500, err)
 
-        # Any further kwarg processing should happen
-        # from inside the method that needs that info,
-        # to limit specifications.
+        # Further kwarg processing should happen from
+        # inside the method that needs the info.
 
         # Dispatch to correct method
         executed_method = self.valid_methods[method]
-        executed_method(*args, **kwargs)
+        executed_method(**kwargs)
 
-    def _create(self, *args, **kwargs):
+    def _create(self, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
-        # Get name of allowed groups (either security_groups kwarg or second positional arg)
-        if 'security_groups' in kwargs:
-            groups = kwargs['security_groups']
-        elif len(args) > 1:
-            groups = args[1]
-            kwargs['security_groups'] = groups
-        else:
-            raise RuntimeError("Error: invalid arguments passed to Auth0 security_flow() method")
-
-        self._assert_authorized_group(groups)
+        self.assert_required_parameters(kwargs, ['groups'])
+        self._assert_authorized_group(kwargs['groups'])
         return
 
-    def _read(self, *args, **kwargs):
+    def _read(self, **kwargs):
         # Data is public by default
         pass
 
@@ -74,10 +58,10 @@ class Auth0(Authorize):
         # both the decorator and the decorated function,
         # so that's how we can get requested UUID
 
-    def _update(self, *args, **kwargs):
+    def _update(self, **kwargs):
         # Requires checking ownership of UUID
         pass
 
-    def _delete(self, *args, **kwargs):
+    def _delete(self, **kwargs):
         # Requires checking ownership of UUID
         pass

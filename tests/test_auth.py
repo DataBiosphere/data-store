@@ -99,13 +99,13 @@ class TestFusilladeAuth(unittest.TestCase):
             # Test that security flow succeeds for each auth backend
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
-                auth.security_flow(['dbio'])
+                auth.security_flow(groups=['dbio'])
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
-                auth.security_flow('create', ['dbio'])
-                auth.security_flow('read')
-                auth.security_flow('update')
-                auth.security_flow('delete')
+                auth.security_flow(method='create', groups=['dbio'])
+                auth.security_flow(method='read')
+                auth.security_flow(method='update')
+                auth.security_flow(method='delete')
 
     def test_unauthorized_security_flow(self):
         invalid_token = {}
@@ -116,10 +116,10 @@ class TestFusilladeAuth(unittest.TestCase):
                 # Check failure due to empty token
                 with self.assertRaises(DSSForbiddenException):
                     auth = AuthWrapper()
-                    auth.security_flow(['dbio'])
+                    auth.security_flow(groups=['dbio'])
 
                 # Check failure due to invalid method signature
-                with self.assertRaises(RuntimeError):
+                with self.assertRaises(DSSException):
                     auth = AuthWrapper()
                     auth.security_flow()
 
