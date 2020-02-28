@@ -17,7 +17,7 @@ class Auth0(Authorize):
                               'update': self._update,
                               'delete': self._delete}
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         Dispatch pattern: the assert_security decorator will specify
         the type of operation (CRUD), which is passed through to the
