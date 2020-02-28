@@ -3,14 +3,24 @@ import logging
 import requests
 from flask import request
 
-from dss.config import Config
+from dss import Config
 from dss.error import DSSForbiddenException, DSSException
 from .authregistry import AuthRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class Authorize(metaclass=AuthRegistry):
+"""
+Authorize class:
+
+The Authorize class is defined at the bottom.
+We define a base class and multiple mixins,
+and use those to compose the final Authorize
+class.
+"""
+
+
+class AuthorizeBase(metaclass=AuthRegistry):
     """
     Base class for authentication/authorization methods.
     This class exists solely to wrap the definition of the assert security flow.
@@ -40,18 +50,61 @@ class Authorize(metaclass=AuthRegistry):
                 raise DSSException(500, title, err)
         return
 
+
+class TokenMixin(AuthorizeBase):
+    """
+    Mixin: add a token property that
+    returns the JWT for the user's session.
+    Includes verification methods.
+    """
     @property
     def token(self):
+        """Property for the user's JWT token"""
         return request.token_info
 
+    def _assert_authorized_issuer(self):
+        """Assert the token issuer matches valid issuers in DSS config"""
+        from ..security import assert_authorized_issuer
+        assert_authorized_issuer(self.token)
+        return
 
-class GroupCheckMixin(Authorize):
+
+class TokenGroupMixin(TokenMixin):
     """
-    Mixin class for Authorize sub-classes: add ability to
-    check for user membership in a given group.
+    Mixin: add a token_group attribute,
+    based on group claim set in DSS config.
+    Includes verification methods.
     """
+    @property
+    def token_group(self):
+        """Property for the user's JWT group claim"""
+        group_claim = Config.get_OIDC_group_claim()
+        return self.token[group_claim]
+
     def _assert_authorized_group(self, groups):
-        # Import when this method is called, not when it is defined, to avoid circular imports
+        """Verify user JWT token group matches specified groups""" from ..security import assert_authorized_group
+        assert_authorized_group(groups, self.token)
+        return
+
+
+class TokenEmailMixin(TokenMixin):
+    """
+    Mixin: add a token_email attribute,
+    based on email token claim set in DSS config.
+    Includes verification methods.
+    """
+    @property
+    def token_email(self):
+        """Property for the user's JWT email claim"""
+        email_claim = Config.get_OIDC_email_claim()
+        return self.token[email_claim]
+
+    def _assert_authorized_email(self, emails):
+        """Verify user JWT token email matches specified emails"""
         from ..security import assert_authorized_group
         assert_authorized_group(groups, self.token)
         return
+
+
+class Authorize(TokenGroupMixin, TokenEmailMixin):
+    pass
