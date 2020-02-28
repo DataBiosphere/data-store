@@ -2,8 +2,6 @@ import logging
 import typing
 import requests
 
-from flask import request
-
 from dss import Config
 from dss.error import DSSForbiddenException
 from .authorize import Authorize
@@ -15,41 +13,30 @@ logger = logging.getLogger(__name__)
 class Fusillade(Authorize):
     """
     This class defines the Fusillade security flow.
+
+    security_flow method keyword arguments:
+    groups : list of allowed groups
+
+    Example:
+    @assert_security(groups=['dbio', 'myothrgrp'])
+    def put(...)
     """
     def __init__(self):
         self.session = requests.Session()
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
         This method maps out security flow for Auth with Fusillade.
-
-        The current implementation of Fusillade (2.0+) uses three pieces of information
-        to evaluate authorization: principals, actions, and resources.
-
-        However, we have overridden this with a simpler authentication-based
-        authorization layer that just checks for membership in a group.
+        We are not using Fusillade 2.x /evaluate endpoint, which would
+        require principals actions, and resources. Instead, we go for
+        a simpler check that the user's token group claim is in one of
+        the allowed groups.
         """
-        # Get token
-        kwargs['security_token'] = request.token_info
-
-        # Set security_groups using first argument, if kwarg not present
-        if kwargs.get('security_groups') is None:
-            kwargs['security_groups'] = args[0]
-
-        # Verify JWT was populated correctly
-        self.assert_required_parameters(kwargs, ['security_groups', 'security_token'])
-        groups = kwargs.get('security_groups')
-        token = kwargs.get('security_token')
-
-        # Import when this method is called, not when it is defined, to avoid circular imports
-        from ..security import assert_authorized_group
-        assert_authorized_group(groups, token)
-
+        self.assert_required_parameters(kwargs, ['groups'])
+        self._assert_authorized_group(kwargs['groups'])
         return
 
-        # If we were using Fusillade's evaluate endpoint,
-        # this is where we would extract relevant information
-        # from the security decorator.
+        # If using Fusillade's /evaluate endpoint:
         self.assert_required_parameters(kwargs, ['principal', 'actions', 'resource'])
         self.assert_authorized(kwargs['principal'], kwargs['actions'], kwargs['resources'])
 

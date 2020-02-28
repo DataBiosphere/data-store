@@ -103,15 +103,23 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
-def assert_authorized_group(group: typing.List[str], token: dict) -> None:
+def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given group under the group claim key"""
-    if token.get(Config.get_OIDC_group_claim()) in group:
+    if token.get(Config.get_OIDC_group_claim()) in groups:
         return
-    logger.info(f"User not in authorized group: {group}, {token}")
+    logger.info(f"User not in any authorized groups: {groups}, {token}")
     raise DSSForbiddenException()
 
 
-def assert_security(*decorator_args, **decorator_kwargs):
+def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
+    """Assert that a JWT token contains the given email under the email claim key"""
+    if token.get(Config.get_OIDC_email_claim()) in emails:
+        return
+    logger.info(f"User not in authorized emails: {emails}, {token}")
+    raise DSSForbiddenException()
+
+
+def assert_security(**decorator_kwargs):
     # Note: we use 3 total layers of function wrappers here,
     # not the usual 2 when wrapping functions, because the
     # wrappers we are defining take *args and **kwargs.
@@ -132,7 +140,7 @@ def assert_security(*decorator_args, **decorator_kwargs):
                     pass
             # Pass all args/kwargs to AuthWrapper
             authz_handler = AuthWrapper()
-            authz_handler.security_flow(*decorator_args, **decorator_kwargs)
+            authz_handler.security_flow(**decorator_kwargs)
             return func(*args, **kwargs)
 
         return wrapper

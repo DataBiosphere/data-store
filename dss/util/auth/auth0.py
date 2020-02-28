@@ -15,30 +15,38 @@ class Auth0(Authorize):
         self.valid_methods = {'create': self._create,
                               'read': self._read,
                               'update': self._update,
-                              'destroy': self._destroy}
+                              'delete': self._delete}
 
-    def security_flow(self, *args, **kwargs):
+    def security_flow(self, **kwargs):
         """
-        Assert security decorator should have arguents specifying
-        type of operation (CRUD), which will be passed through
-        to these args/kwargs, and relay the call to the right method
-        in valid_methods.
+        Dispatch pattern: the assert_security decorator will specify
+        the type of operation (CRUD), which is passed through to the
+        kwargs of this method, and used to call the correct method.
         """
         #  TODO add some type of jwt inspection
-        requested_method = kwargs.get('auth_method').lower()
-        if requested_method is None or requested_method not in self.valid_methods.keys():
-            err = f'Unable to locate auth_method {requested_method} for request, valid methods are: '
-            err += f'{", ".join(self.vaid_methods)}'
-            raise DSSException(500, err)
-        else:
-            executed_method = self.valid_methods[requested_method]
-            executed_method(*args, **kwargs)
+        self.assert_required_parameters(kwargs, ['method'])
+        method = kwargs['method']
 
-    def _create(self, *args, **kwargs):
-        # Requires checking group
+        # Ensure method is valid
+        if method is None or method not in self.valid_methods.keys():
+            err = f'Unable to locate auth_method {method} for request, valid methods are: '
+            err += f'{", ".join(self.valid_methods)}'
+            raise DSSException(500, err)
+
+        # Further kwarg processing should happen from
+        # inside the method that needs the info.
+
+        # Dispatch to correct method
+        executed_method = self.valid_methods[method]
+        executed_method(**kwargs)
+
+    def _create(self, **kwargs):
+        """Auth checks for any 'create' API endpoint actions"""
+        self.assert_required_parameters(kwargs, ['groups'])
+        self._assert_authorized_group(kwargs['groups'])
         return
 
-    def _read(self, *args, **kwargs):
+    def _read(self, **kwargs):
         # Data is public by default
         pass
 
@@ -50,10 +58,10 @@ class Auth0(Authorize):
         # both the decorator and the decorated function,
         # so that's how we can get requested UUID
 
-    def _update(self, *args, **kwargs):
+    def _update(self, **kwargs):
         # Requires checking ownership of UUID
         pass
 
-    def _delete(self, *args, **kwargs):
+    def _delete(self, **kwargs):
         # Requires checking ownership of UUID
         pass

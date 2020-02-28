@@ -16,7 +16,6 @@ from dss.config import Replica
 from dss.logging import configure_test_logging
 from dss.util import UrlBuilder, security, multipart_parallel_upload
 from dss.util.aws import ARN
-from dss.util.auth.fusillade import Fusillade
 from tests import UNAUTHORIZED_GCP_CREDENTIALS, get_service_jwt
 from tests.infra import testmode
 
