@@ -83,6 +83,7 @@ class TokenGroupMixin(TokenMixin):
 
     def _assert_authorized_group(self, groups):
         """Verify user JWT token group matches specified groups""" from ..security import assert_authorized_group
+        from ..security import assert_authorized_group
         assert_authorized_group(groups, self.token)
         return
 
@@ -101,8 +102,8 @@ class TokenEmailMixin(TokenMixin):
 
     def _assert_authorized_email(self, emails):
         """Verify user JWT token email matches specified emails"""
-        from ..security import assert_authorized_group
-        assert_authorized_group(groups, self.token)
+        from ..security import assert_authorized_email
+        assert_authorized_email(groups, self.token)
         return
 
 
