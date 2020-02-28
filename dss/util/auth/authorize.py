@@ -82,7 +82,7 @@ class TokenGroupMixin(TokenMixin):
         return self.token[group_claim]
 
     def _assert_authorized_group(self, groups):
-        """Verify user JWT token group matches specified groups""" from ..security import assert_authorized_group
+        """Verify user JWT token group matches specified groups"""
         from ..security import assert_authorized_group
         assert_authorized_group(groups, self.token)
         return
