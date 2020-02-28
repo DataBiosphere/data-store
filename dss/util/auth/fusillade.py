@@ -15,10 +15,10 @@ class Fusillade(Authorize):
     This class defines the Fusillade security flow.
 
     security_flow method keyword arguments:
-    security_groups : list of allowed groups
+    groups : list of allowed groups
 
     Example:
-    @assert_security(security_groups = ['mygrp', 'myothrgrp'])
+    @assert_security(groups = ['dbio', 'myothrgrp'])
     def put(...)
     """
     def __init__(self):
@@ -32,8 +32,8 @@ class Fusillade(Authorize):
         a simpler check that the user's token group claim is in one of
         the allowed groups.
         """
-        self.assert_required_parameters(kwargs, 'security_groups')
-        groups = kwargs['security_groups']
+        self.assert_required_parameters(kwargs, 'groups')
+        groups = kwargs['groups']
         self._assert_authorized_group(groups)
         return
 
