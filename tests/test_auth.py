@@ -74,20 +74,21 @@ class TestAuthMixins(unittest.TestCase):
         grp = 'dbio'
         valid_token = get_group_claim_token(grp)
         invalid_token = get_group_claim_token('boo-this-is-an-invalid-token-group')
-        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token_group') as patched_token_group:
-            patched_token_group.return_value = [valid_token, invalid_token]
+        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', valid_token):
             tgm._assert_authorized_group([grp])
+        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', invalid_token):
             with self.assertRaises(DSSException):
                 tgm._assert_authorized_group([grp])
 
     def test_email_token_mixin(self):
         tem = TokenEmailMixin()
         eml = 'valid-email@dss-testauth-testemailtokenmixin.ucsc.edu'
-        valid_token = get_email_claim_token(grp)
-        invalid_token = get_email_claim_token(f'not-valid-{eml}')
-        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token_email') as patched_token_email:
-            patched_token_email.return_value = [valid_token, invalid_token]
+        valid_token = get_email_claim_token(eml)
+        invalid_token = get_email_claim_token(f'not-a-valid-email')
+        # Check valid and invalid tokens
+        with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', valid_token):
             tem._assert_authorized_email([eml])
+        with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', invalid_token):
             with self.assertRaises(DSSException):
                 tem._assert_authorized_email([eml])
 
@@ -108,6 +109,9 @@ class TestFusilladeAuth(unittest.TestCase):
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
                 auth.security_flow('create', ['dbio'])
+                auth.security_flow('read')
+                auth.security_flow('update')
+                auth.security_flow('delete')
 
     def test_unauthorized_security_flow(self):
         invalid_token = {}
