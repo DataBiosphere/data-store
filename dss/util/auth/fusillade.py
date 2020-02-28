@@ -32,7 +32,7 @@ class Fusillade(Authorize):
         a simpler check that the user's token group claim is in one of
         the allowed groups.
         """
-        self.assert_required_parameters(kwargs, 'groups')
+        self.assert_required_parameters(kwargs, ['groups'])
         groups = kwargs['groups']
         self._assert_authorized_group(groups)
         return

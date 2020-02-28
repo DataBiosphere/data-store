@@ -43,7 +43,7 @@ class Auth0(Authorize):
     def _create(self, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
         # Get name of allowed groups (either security_groups kwarg or second positional arg)
-        self.assert_required_parameters(kwargs, 'groups')
+        self.assert_required_parameters(kwargs, ['groups'])
         groups = kwargs['groups']
         self._assert_authorized_group(groups)
         return
