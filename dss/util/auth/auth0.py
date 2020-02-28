@@ -50,9 +50,7 @@ class Auth0(Authorize):
 
     def _create(self, *args, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
-        # Get name of allowed groups
-        # (either security_groups kwarg
-        # or second positional arg)
+        # Get name of allowed groups (either security_groups kwarg or second positional arg)
         if 'security_groups' in kwargs:
             groups = kwargs['security_groups']
         elif len(args) > 1:
