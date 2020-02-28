@@ -119,7 +119,7 @@ def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
     raise DSSForbiddenException()
 
 
-def assert_security(*decorator_args, **decorator_kwargs):
+def assert_security(**decorator_kwargs):
     # Note: we use 3 total layers of function wrappers here,
     # not the usual 2 when wrapping functions, because the
     # wrappers we are defining take *args and **kwargs.
@@ -140,8 +140,8 @@ def assert_security(*decorator_args, **decorator_kwargs):
                     pass
             # Pass all args/kwargs to AuthWrapper
             authz_handler = AuthWrapper()
-            authz_handler.security_flow(*decorator_args, **decorator_kwargs)
-            return func(*args, **kwargs)
+            authz_handler.security_flow(**decorator_kwargs)
+            return func(**kwargs)
 
         return wrapper
 
