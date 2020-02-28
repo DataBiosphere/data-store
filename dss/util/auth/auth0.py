@@ -24,7 +24,7 @@ class Auth0(Authorize):
         kwargs of this method, and used to call the correct method.
         """
         #  TODO add some type of jwt inspection
-        self.assert_required_parameters(kwargs, 'method')
+        self.assert_required_parameters(kwargs, ['method'])
         method = kwargs['method']
 
         # Ensure method is valid
