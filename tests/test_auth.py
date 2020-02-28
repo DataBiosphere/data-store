@@ -74,16 +74,22 @@ class TestAuthMixins(unittest.TestCase):
         grp = 'dbio'
         valid_token = get_group_claim_token(grp)
         invalid_token = get_group_claim_token('boo-this-is-an-invalid-token-group')
-        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token_group', grp):
+        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token_group') as patched_token_group:
+            patched_token_group.return_value = [valid_token, invalid_token]
             tgm._assert_authorized_group([grp])
+            with self.assertRaises(DSSException):
+                tgm._assert_authorized_group([grp])
 
     def test_email_token_mixin(self):
-        tgm = TokenEmailMixin()
+        tem = TokenEmailMixin()
         eml = 'valid-email@dss-testauth-testemailtokenmixin.ucsc.edu'
         valid_token = get_email_claim_token(grp)
         invalid_token = get_email_claim_token(f'not-valid-{eml}')
-        with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token_email', eml):
-            tgm._assert_authorized_email([eml])
+        with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token_email') as patched_token_email:
+            patched_token_email.return_value = [valid_token, invalid_token]
+            tem._assert_authorized_email([eml])
+            with self.assertRaises(DSSException):
+                tem._assert_authorized_email([eml])
 
 
 class TestFusilladeAuth(unittest.TestCase):
