@@ -18,7 +18,7 @@ class Fusillade(Authorize):
     groups : list of allowed groups
 
     Example:
-    @assert_security(groups = ['dbio', 'myothrgrp'])
+    @assert_security(groups=['dbio', 'myothrgrp'])
     def put(...)
     """
     def __init__(self):
