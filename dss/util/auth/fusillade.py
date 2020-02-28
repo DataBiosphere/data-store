@@ -10,7 +10,7 @@ from .authorize import Authorize, GroupCheckMixin
 logger = logging.getLogger(__name__)
 
 
-class Fusillade(GroupCheckMixin):
+class Fusillade(Authorize):
     """
     This class defines the Fusillade security flow.
 
