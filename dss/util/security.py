@@ -141,7 +141,7 @@ def assert_security(**decorator_kwargs):
             # Pass all args/kwargs to AuthWrapper
             authz_handler = AuthWrapper()
             authz_handler.security_flow(**decorator_kwargs)
-            return func(**kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
