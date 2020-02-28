@@ -38,9 +38,9 @@ class Auth0(Authorize):
 
         # Dispatch to correct method
         executed_method = self.valid_methods[method]
-        executed_method(*args, **kwargs)
+        executed_method(**kwargs)
 
-    def _create(self, *args, **kwargs):
+    def _create(self, **kwargs):
         """Auth checks for any 'create' API endpoint actions"""
         # Get name of allowed groups (either security_groups kwarg or second positional arg)
         self.assert_required_parameters(kwargs, 'groups')
@@ -48,7 +48,7 @@ class Auth0(Authorize):
         self._assert_authorized_group(groups)
         return
 
-    def _read(self, *args, **kwargs):
+    def _read(self, **kwargs):
         # Data is public by default
         pass
 
@@ -60,10 +60,10 @@ class Auth0(Authorize):
         # both the decorator and the decorated function,
         # so that's how we can get requested UUID
 
-    def _update(self, *args, **kwargs):
+    def _update(self, **kwargs):
         # Requires checking ownership of UUID
         pass
 
-    def _delete(self, *args, **kwargs):
+    def _delete(self, **kwargs):
         # Requires checking ownership of UUID
         pass
