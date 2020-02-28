@@ -4,7 +4,7 @@ import requests
 
 from dss import Config
 from dss.error import DSSForbiddenException
-from .authorize import Authorize, GroupCheckMixin
+from .authorize import Authorize
 
 
 logger = logging.getLogger(__name__)

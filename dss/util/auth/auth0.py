@@ -1,7 +1,7 @@
 import requests
 
 from dss.error import DSSForbiddenException, DSSException
-from .authorize import Authorize, GroupCheckMixin
+from .authorize import Authorize
 
 
 class Auth0(Authorize):
