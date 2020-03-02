@@ -381,12 +381,8 @@ class Config:
 
     @staticmethod
     def get_notification_email() -> str:
-        envvar = "DSS_NOTIFICATION_SENDER"
-        if envvar not in os.environ:
-            raise Exception(
-                "Please set the {} environment variable".format(envvar))
-        Config._NOTIFICATION_SENDER_EMAIL = os.environ[envvar]
-
+        val = Config._get_required_envvar("DSS_NOTIFICATION_SENDER")
+        Config._NOTIFICATION_SENDER_EMAIL = val
         return Config._NOTIFICATION_SENDER_EMAIL
 
     @staticmethod
