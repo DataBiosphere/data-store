@@ -20,10 +20,10 @@ def put_collection(owner: str, collection_fqid: str, permission_level: str = 'ow
 
 
 def get_collection(owner: str, collection_fqid: str):
-    return dynamodb.get_item(table=collection_db_table,
-                             hash_key=owner,
-                             sort_key=collection_fqid,
-                             return_key='sort_key')
+    collection = dynamodb.get_item(table=collection_db_table,
+                                   hash_key=owner,
+                                   sort_key=collection_fqid)
+    return collection.get('sort_key')
 
 
 def get_collection_fqids_for_owner(owner: str):

@@ -33,7 +33,8 @@ def get_subscription(replica: Replica, owner: str, uuid: str):
         item = dynamodb.get_item(table=subscription_db_table.format(replica.name),
                                  hash_key=owner,
                                  sort_key=uuid)
-        return json.loads(item)
+
+        return json.loads(item.get('body'))
     except dynamodb.DynamoDBItemNotFound:
         return None
 
