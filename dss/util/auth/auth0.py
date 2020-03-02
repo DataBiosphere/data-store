@@ -5,16 +5,55 @@ from .authorize import Authorize
 
 
 class FlacMixin(Authorize):
+    """
+    Mixin class for Auth0 Authorize class to use fine-level
+    access control (FLAC) table to check if a user is allowed
+    to access a given UUID.
+    """
     def _assert_authorized_flac(self, **kwargs):
-        uuid = kwargs['uuid']
-        method = kwargs['method']
-        email = self.token_email
-        group = self.token_group
+        """
+        kwargs contains information from both the original API function
+        call and from the security decorator. Use both to look up this
+        UUID in the FLAC table.
+        """
+        # uuid = kwargs['uuid']
+        # method = kwargs['method']
+        # email = self.token_email
+        # group = self.token_group
         # Do FLAC lookup here
         return
 
+class Auth0AuthZGroupsMixin(Authorize):
+    """
+    Mixin class for Auth0 Authorize class to access groups information
+    added to the JWT by the Auth0 AuthZ extension. These are the groups
+    used to determine FLAC access.
 
-class Auth0(FlacMixin):
+    (Note: the Auth0 AuthZ extension adds groups, roles, and permissions,
+    but here we just use groups.)
+    """
+    def _get_auth0authz_claim(self):
+        return "https://dev.ucsc-cgp-redwood.org/auth0"
+
+    def _get_auth0authz_group_claim(self):
+        return "groups"
+
+    @property
+    def auth0authz_groups(self):
+        """Property for the groups added to the JWT by the Auth0 AuthZ plugin"""
+        # First get the portion of the token added by the Auth0 AuthZ extension
+        auth0authz_claim = self._get_auth0authz_claim()
+        self.assert_required_parameters(self.token, [auth0authz_claim])
+        auth0authz_token = self.token[auth0authz_claim]
+
+        # Second extract the groups from this portion
+        auth0authz_groups_claim = self._get_auth0authz_groups_claim()
+        self.assert_required_parameters(auth0authz_token, [auth0authz_groups_claim])
+        groups = self.token[auth0authz_claim][auth0authz_groups_claim]
+        return groups
+
+
+class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     """
     Implements the Auth0 security flow, which implements different
     authorization checks based on whether operations are
