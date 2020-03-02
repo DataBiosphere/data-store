@@ -115,6 +115,7 @@ class Config:
     _ALLOWED_GOOGLE_PROJECTS: typing.Optional[str] = None
     _CURRENT_CONFIG: BucketConfig = BucketConfig.ILLEGAL
     _NOTIFICATION_SENDER_EMAIL: typing.Optional[str] = None
+    _ADMIN_USER_EMAILS_LIST: typing.Optional[typing.List[str]] = None
     _TRUSTED_GOOGLE_PROJECTS: typing.Optional[typing.List[str]] = None
     _OIDC_AUDIENCE: typing.Optional[typing.List[str]] = None
     _AUTH_URL: typing.Optional[str] = None
@@ -387,6 +388,15 @@ class Config:
         Config._NOTIFICATION_SENDER_EMAIL = os.environ[envvar]
 
         return Config._NOTIFICATION_SENDER_EMAIL
+
+    @staticmethod
+    def get_admin_user_emails() -> typing.List[str]:
+        envvar = "ADMIN_USER_EMAILS"
+        if envvar not in os.environ:
+            raise Exception(
+                "Please set the {} environment variable".format(envvar))
+        Config._ADMIN_USER_EMAILS_LIST = os.environ[envvar].split(",")
+        return Config._ADMIN_USER_EMAILS_LIST
 
     @staticmethod
     def debug_level() -> int:
