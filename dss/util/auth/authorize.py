@@ -107,5 +107,20 @@ class TokenEmailMixin(TokenMixin):
         return
 
 
-class Authorize(TokenGroupMixin, TokenEmailMixin):
+class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
+    @property
+    def admin_emails(self):
+        """Property for the list of admin user emails"""
+        admin_emails = ",".split(os.environ['ADMIN_USER_EMAILS'])
+        return admin_emails
+
+    def _assert_admin(self):
+        """Boolean property: is token_email an admin email"""
+        if self.token_email:
+            if self.token_email in admin_emails:
+                return True
+        return False
+
+
+class Authorize(AdminStatusMixin):
     pass
