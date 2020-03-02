@@ -1,5 +1,6 @@
 import requests
 
+from dss import Config
 from dss.error import DSSForbiddenException, DSSException
 from .authorize import Authorize
 
@@ -33,7 +34,8 @@ class Auth0AuthZGroupsMixin(Authorize):
     but here we just use groups.)
     """
     def _get_auth0authz_claim(self):
-        return "https://dev.ucsc-cgp-redwood.org/auth0"
+        oidc_audience = Config.get_audience()[0]
+        return f"{oidc_audience}auth0"
 
     def _get_auth0authz_group_claim(self):
         return "groups"
@@ -120,7 +122,7 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
         """Auth checks for 'update' API actions"""
         try:
             # Admins are always allowed to update
-            self._assert_admin(**kwargs)
+            self._assert_admin()
             return
         except DSSException:
             # Update requires read and create access
@@ -139,4 +141,4 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     def _delete(self, **kwargs):
         """Auth checks for 'delete' API actions"""
         # Only admins allowed
-        self._assert_admin(**kwargs)
+        self._assert_admin()
