@@ -35,10 +35,5 @@ resource "aws_dynamodb_table" "sfn_state" {
     type = "L"
   }
 
-  attribute {
-    name = "roles"
-    type = "L"
-  }
-
   tags = local.common_tags
 }
