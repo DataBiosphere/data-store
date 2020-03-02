@@ -111,13 +111,13 @@ class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
     @property
     def admin_emails(self):
         """Property for the list of admin user emails"""
-        admin_emails = ",".split(os.environ['ADMIN_USER_EMAILS'])
+        admin_emails = Config.get_admin_user_emails()
         return admin_emails
 
     def _assert_admin(self):
         """Boolean property: is token_email an admin email"""
         if self.token_email:
-            if self.token_email in admin_emails:
+            if self.token_email in self.admin_emails:
                 return True
         return False
 
