@@ -110,7 +110,7 @@ def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
     group = token.get(group_claim)
     if group in groups:
         return
-    err = f"User not in any authorized groups: user's group is {group}, authorized groups are {groups}"
+    err = f"User is not authorized to access this resource: user's group is {group}, authorized groups are {groups}"
     logger.info(err)
     raise DSSForbiddenException(err)
 
@@ -121,7 +121,7 @@ def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
     email = token.get(email_claim)
     if email in emails:
         return
-    err = f"User not in authorized emails: user's email is {email}, authorized emails are {emails}"
+    err = f"User is not authorized to access this resource: user's email is {email}, authorized emails are {emails}"
     logger.info(err)
     raise DSSForbiddenException(err)
 
