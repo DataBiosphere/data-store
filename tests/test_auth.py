@@ -95,7 +95,6 @@ class TestFusilladeAuth(unittest.TestCase):
     """
     Test security flow for Fusillade authentication and authorization layer.
     """
-
     def test_authorized_security_flow(self):
         valid_grp = 'dbio'
         valid_token = get_group_claim_token(valid_grp)
@@ -105,22 +104,55 @@ class TestFusilladeAuth(unittest.TestCase):
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
                 auth.security_flow(groups=[valid_grp])
+
+    def test_unauthorized_security_flow(self):
+        invalid_token = {}
+        with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
+            # Set auth backend
+            with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
+                valid_grp = 'dbio'
+                # Check failure due to empty token
+                with self.assertRaises(DSSForbiddenException):
+                    auth = AuthWrapper()
+                    auth.security_flow(groups=[valid_grp])
+                # Check failure due to invalid method signature
+                with self.assertRaises(DSSException):
+                    auth = AuthWrapper()
+                    auth.security_flow()
+
+
+class TestAuth0Auth(unittest.TestCase):
+    """
+    Test security flow for Auth0 authentication and authorization layer.
+    """
+    def test_authorized_security_flow(self):
+        """
+        Create a token with a valid group claim, and run through the normal security flow to check for
+        a valid group claim.
+        """
+        valid_grp = 'dbio'
+        valid_token = get_group_claim_token(valid_grp)
+        with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
                 auth.security_flow(method='create', groups=[valid_grp])
                 auth.security_flow(method='read')
                 auth.security_flow(method='update', groups=[valid_grp])
                 # Admins only
-                with self.assertRaises(DSSException):
+                with self.assertRaises(DSSForbiddenException):
                     auth.security_flow(method='delete')
 
     def test_admin_security_flow(self):
+        """
+        Create a token for an admin user, and run through the security flow to verify admins are allowed
+        to do all actions.
+        """
         admin_token = get_admin_claim_token()
         with mock.patch('dss.util.auth.authorize.Authorize.token', admin_token):
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
                 valid_grp = 'dbio'
-                # These should allow admins no matter what
+                # These should all allow admins
                 auth.security_flow(method='create', groups=[valid_grp])
                 auth.security_flow(method='read')
                 auth.security_flow(method='update', groups=[valid_grp])
@@ -128,20 +160,30 @@ class TestFusilladeAuth(unittest.TestCase):
                 auth.security_flow(method='delete')
 
     def test_unauthorized_security_flow(self):
+        """
+        Create an invalid (empty) token, and run through the security flow to verify unauthorized users
+        are only allowed a limited set of actions.
+        """
         invalid_token = {}
         with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
-
-            # Test that security flow fails for each auth backend
-            with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
+            # Set auth backend
+            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
+                valid_grp = 'dbio'
                 # Check failure due to empty token
+                auth = AuthWrapper()
                 with self.assertRaises(DSSForbiddenException):
-                    auth = AuthWrapper()
-                    auth.security_flow(groups=['dbio'])
-
-                # Check failure due to invalid method signature
+                    auth.security_flow(method='create', groups=[valid_grp])
+                    auth.security_flow(method='update', groups=[valid_grp])
                 with self.assertRaises(DSSException):
-                    auth = AuthWrapper()
-                    auth.security_flow()
+                    auth.security_flow(method='delete')
+                # Check failure due to invalid method signature
+                auth = AuthWrapper()
+                with self.assertRaises(DSSException):
+                    auth.security_flow()  # Missing required method kwarg
+                    auth.security_flow(method='create')  # Missing required groups kwarg
+                    auth.security_flow(method='update')  # Missing required groups kwarg
+                    auth.security_flow(method='delete')  # Not an admin
+
 
 if __name__ == "__main__":
     unittest.main()
