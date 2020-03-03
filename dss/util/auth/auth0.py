@@ -52,6 +52,14 @@ class Auth0AuthZGroupsMixin(Authorize):
         groups = self.token[auth0authz_claim][auth0authz_groups_claim]
         return groups
 
+    def assert_auth0authz_groups_intersects(self, groups):
+        """
+        Assert that the intersection of Auth0 AuthZ groups and user-provided groups
+        has cardinality greater than zero (intersection has at least 1 member).
+        """
+        cardinality = len(set(self.auth0authz_groups).intersection(set(groups)))
+        return cardinality > 0
+
 
 class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     """
