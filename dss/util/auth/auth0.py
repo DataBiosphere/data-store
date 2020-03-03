@@ -98,6 +98,14 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
             err += f'{", ".join(self.valid_methods)}'
             raise DSSException(500, err)
 
+        # Allow any action by admins
+        try:
+            self._assert_admin()
+            return
+        except DSSException:
+            # Keep going
+            pass
+
         # Further kwarg processing should happen from
         # inside the method that needs the info.
 
