@@ -19,6 +19,7 @@ def put_collection(owner: str, collection_fqid: str, permission_level: str = 'ow
             raise
 
 
+# TODO figure out what this function does, appears only within unit tests, but why pass back sorted_key?
 def get_collection(owner: str, collection_fqid: str):
     collection = dynamodb.get_item(table=collection_db_table,
                                    hash_key=owner,
