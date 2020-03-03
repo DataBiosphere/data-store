@@ -7,7 +7,7 @@ from dss.util.aws.clients import dynamodb as db  # type: ignore
 class DynamoDBItemNotFound(Exception):
     pass
 
-class SchemaMissMatch(Exception):
+class SchemaMismatch(Exception):
     pass
 
 
@@ -47,13 +47,13 @@ def put_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, value
     db.put_item(**query)
 
 
-def get_item(*, table: str, hash_key: str, sort_key: str = None) -> typing.Dict:
+def get_item(*, table: str, hash_key: str, sort_key: Optional[str]) -> typing.Dict:
     """
     Get associated value for a given set of keys from a dynamoDB table.
     :param table: Name of the table in AWS.
     :param str hash_key: 1st primary key that can be used to fetch associated sort_keys and values.
     :param str sort_key: 2nd primary key, used with hash_key to fetch a specific value.
-    :return: item object from ddb (dic)
+    :return: item object from ddb (dict), with attribute types omitted
     """
     return_value = {}
     query = {'TableName': table,
@@ -61,7 +61,7 @@ def get_item(*, table: str, hash_key: str, sort_key: str = None) -> typing.Dict:
     try:
         item = db.get_item(**query).get('Item')
     except db.exceptions.ValidationException:
-        raise SchemaMissMatch(f'Query schema {query} does not match table {table}')
+        raise SchemaMismatch(f'Query schema {query} does not match table {table}')
     if item is None:
         raise DynamoDBItemNotFound(f'Query failed to fetch item from database: {query}')
     for k, v in item.items():  # strips out ddb typing info
