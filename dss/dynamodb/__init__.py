@@ -7,6 +7,7 @@ from dss.util.aws.clients import dynamodb as db  # type: ignore
 class DynamoDBItemNotFound(Exception):
     pass
 
+
 class SchemaMismatch(Exception):
     pass
 
