@@ -179,10 +179,9 @@ class TestAuth0Auth(unittest.TestCase):
                 valid_grp = 'dbio'
                 # Check failure due to empty token
                 auth = AuthWrapper()
-                with self.assertRaises(DSSForbiddenException):
+                with self.assertRaises(DSSException):
                     auth.security_flow(method='create', groups=[valid_grp])
                     auth.security_flow(method='update', groups=[valid_grp])
-                with self.assertRaises(DSSException):
                     auth.security_flow(method='delete')
                 # Check failure due to invalid method signature
                 auth = AuthWrapper()
