@@ -111,12 +111,12 @@ class TokenEmailMixin(TokenMixin):
 
 def always_allow_admins(f):
     """Decorate an auth check so that admins are always allowed"""
-    def wrapper(*args):
-        slf = args[0]
+    def wrapper(*args, **kwargs):
+        slf = args[0]  # arg[0] of method call is self
         if slf._is_admin():
             return  # Skip calling the auth function altogether
         else:
-            return f(*args)
+            return f(*args, **kwargs)
     return wrapper
 
 
