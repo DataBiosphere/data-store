@@ -254,7 +254,10 @@ class TestSecurity(unittest.TestCase):
 class TestDynamodbUtils(unittest.TestCase):
 
     def test_get_item(self):
-        """test out functionality of removing the attribute types from a dynamodb response"""
+        """
+        Test out functionality of removing the attribute types from a dynamodb response.
+        Example: {"foo": {"S": "bar"}} should become {"foo": "bar"}
+        """
 
         formatted_item_attributes = {"sort_key": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z",
                                      "hash_key": "travis-test@platform-hca.iam.gserviceaccount.com",
