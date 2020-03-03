@@ -25,15 +25,5 @@ resource "aws_dynamodb_table" "sfn_state" {
     type = "S"
   }
 
-  attribute {
-    name = "users"
-    type = "SS"
-  }
-
-  attribute {
-    name = "groups"
-    type = "SS"
-  }
-
   tags = local.common_tags
 }
