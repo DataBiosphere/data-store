@@ -48,7 +48,7 @@ def put_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, value
     db.put_item(**query)
 
 
-def get_item(*, table: str, hash_key: str, sort_key: Optional[str]) -> typing.Dict:
+def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None) -> typing.Dict:
     """
     Get associated value for a given set of keys from a dynamoDB table.
     :param table: Name of the table in AWS.
