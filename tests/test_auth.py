@@ -16,10 +16,14 @@ from tests.infra import testmode
 
 
 def get_group_claim_token(grp):
-    return {os.environ['OIDC_GROUP_CLAIM']: grp}
+    return {Config.get_OIDC_group_claim(): grp}
 
 def get_email_claim_token(eml):
-    return {os.environ['OIDC_EMAIL_CLAIM']: eml}
+    return {Config.get_OIDC_email_claim(): eml}
+
+def get_admin_claim_token():
+    admin_user_emails = Config.get_admin_user_emails()
+    return {Config.get_OIDC_email_claim(): admin_user_emails[0]}
 
 class TestAuthBase(unittest.TestCase):
     """
@@ -93,18 +97,34 @@ class TestFusilladeAuth(unittest.TestCase):
     """
 
     def test_authorized_security_flow(self):
-        valid_token = get_group_claim_token('dbio')
+        valid_grp = 'dbio'
+        valid_token = get_group_claim_token(valid_grp)
         with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
 
             # Test that security flow succeeds for each auth backend
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
-                auth.security_flow(groups=['dbio'])
+                auth.security_flow(groups=[valid_grp])
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
-                auth.security_flow(method='create', groups=['dbio'])
+                auth.security_flow(method='create', groups=[valid_grp])
                 auth.security_flow(method='read')
-                auth.security_flow(method='update')
+                auth.security_flow(method='update', groups=[valid_grp])
+                # Admins only
+                with self.assertRaises(DSSException):
+                    auth.security_flow(method='delete')
+
+    def test_admin_security_flow(self):
+        admin_token = get_admin_claim_token()
+        with mock.patch('dss.util.auth.authorize.Authorize.token', admin_token):
+            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
+                auth = AuthWrapper()
+                valid_grp = 'dbio'
+                # These should allow admins no matter what
+                auth.security_flow(method='create', groups=[valid_grp])
+                auth.security_flow(method='read')
+                auth.security_flow(method='update', groups=[valid_grp])
+                # Admins only
                 auth.security_flow(method='delete')
 
     def test_unauthorized_security_flow(self):
