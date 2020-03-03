@@ -105,17 +105,21 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
 
 def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given group under the group claim key"""
-    if token.get(Config.get_OIDC_group_claim()) in groups:
+    group_claim = Config.get_OIDC_group_claim()
+    group = token.get(group_claim)
+    if group in groups:
         return
-    logger.info(f"User not in any authorized groups: {groups}, {token}")
+    logger.info(f"User is not in authorized groups: user's group is {group}, authorized groups are {groups}")
     raise DSSForbiddenException()
 
 
 def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given email under the email claim key"""
-    if token.get(Config.get_OIDC_email_claim()) in emails:
+    email_claim = Config.get_OIDC_email_claim()
+    email = token.get(email_claim)
+    if email in emails:
         return
-    logger.info(f"User not in authorized emails: {emails}, {token}")
+    logger.info(f"User is not authorized: user's email is {email}, authorized emails are {emails}")
     raise DSSForbiddenException()
 
 
