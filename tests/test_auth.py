@@ -2,6 +2,7 @@
 import io
 import os
 import sys
+import json
 import unittest
 from unittest import mock
 
@@ -13,22 +14,32 @@ from dss import DSSException, DSSForbiddenException, Config
 from dss.util.auth import AuthWrapper
 from dss.util.auth.authorize import (AuthorizeBase, TokenMixin, TokenGroupMixin, TokenEmailMixin)
 from tests.infra import testmode
+from tests import get_service_jwt, UNAUTHORIZED_GCP_CREDENTIALS
 
 
-def get_token_issuer_claim_ok(iss):
-    return {'iss': iss}
-
-def get_token_group_claim_ok(grp):
-    return {Config.get_OIDC_group_claim(): grp}
-
-
-def get_token_email_claim_ok(eml):
-    return {Config.get_OIDC_email_claim(): eml}
+def get_token_issuer_claim(iss):
+    token = {}
+    token['iss'] = iss
+    return token
 
 
-def get_token_admin_claim_ok():
+def get_token_email_claim(eml):
+    token = get_token_issuer_claim('')
+    token[Config.get_OIDC_email_claim()] = eml
+    return token
+
+
+def get_token_group_claim(grp):
+    token = get_token_email_claim('')
+    token[Config.get_OIDC_group_claim()] = grp
+    return token
+
+
+def get_token_admin_claim():
+    token = get_token_issuer_claim('')
     admin_user_emails = Config.get_admin_user_emails()
-    return {Config.get_OIDC_email_claim(): admin_user_emails[0]}
+    token[Config.get_OIDC_email_claim()] = admin_user_emails[0]
+    return token
 
 
 class TestAuthBase(unittest.TestCase):
@@ -58,15 +69,14 @@ class TestAuthMixins(unittest.TestCase):
     """
     Test the various mixins defined for Authorize classes
     """
-
     @classmethod
     def setUpClass(cls):
         dss.Config.set_config(dss.BucketConfig.TEST)
 
     def test_token_mixin(self):
         tm = TokenMixin()
-        valid_token = get_token_issuer_claim_ok(Config.get_openid_provider())
-        invalid_token = get_token_issuer_claim_ok("dss-testauth-test_token_mixin-invalid_issuer")
+        valid_token = get_token_issuer_claim(Config.get_openid_provider())
+        invalid_token = get_token_issuer_claim("dss_test-auth_test-token-mixin")
         with mock.patch('dss.util.auth.authorize.TokenMixin.token', valid_token):
             self.assertEquals(tm.token, valid_token)
             tm._assert_authorized_issuer()
@@ -77,26 +87,27 @@ class TestAuthMixins(unittest.TestCase):
 
     def test_token_group_mixin(self):
         tgm = TokenGroupMixin()
-        grp = 'dbio'
-        valid_token = get_token_group_claim_ok(grp)
-        invalid_token = get_token_group_claim_ok('boo-this-is-an-invalid-token-group')
+        valid_group = 'dbio'
+        valid_token = get_token_group_claim(valid_group)
+        invalid_token = get_token_group_claim('dss_test-auth_test-token-group-mixin')
         with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', valid_token):
-            tgm._assert_authorized_group([grp])
+            tgm._assert_authorized_group([valid_group])
         with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', invalid_token):
             with self.assertRaises(DSSException):
-                tgm._assert_authorized_group([grp])
+                tgm._assert_authorized_group([valid_group])
 
     def test_token_email_mixin(self):
         tem = TokenEmailMixin()
-        eml = 'valid-email@dss-testauth-test_token_email_mixin.ucsc-cgp-redwood.org'
-        valid_token = get_token_email_claim_ok(eml)
-        invalid_token = get_token_email_claim_ok(f'not-a-valid-email')
+        valid_email = 'valid-email@dss_test-auth_test-token-email-mixin'
+        invalid_email = 'invalid-email@dss_test-auth_test-token-email-mixin'
+        valid_token = get_token_email_claim(valid_email)
+        invalid_token = get_token_email_claim(invalid_email)
         # Check valid and invalid tokens
         with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', valid_token):
-            tem._assert_authorized_email([eml])
+            tem._assert_authorized_email([valid_email])
         with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', invalid_token):
             with self.assertRaises(DSSException):
-                tem._assert_authorized_email([eml])
+                tem._assert_authorized_email([valid_email])
 
 
 class TestFusilladeAuth(unittest.TestCase):
@@ -105,7 +116,7 @@ class TestFusilladeAuth(unittest.TestCase):
     """
     def test_authorized_security_flow(self):
         valid_grp = 'dbio'
-        valid_token = get_token_group_claim_ok(valid_grp)
+        valid_token = get_token_group_claim(valid_grp)
         with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
 
             # Test that security flow succeeds for each auth backend
@@ -139,7 +150,7 @@ class TestAuth0Auth(unittest.TestCase):
         a valid group claim.
         """
         valid_grp = 'dbio'
-        valid_token = get_token_group_claim_ok(valid_grp)
+        valid_token = get_token_group_claim(valid_grp)
         with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
@@ -155,7 +166,7 @@ class TestAuth0Auth(unittest.TestCase):
         Create a token for an admin user, and run through the security flow to verify admins are allowed
         to do all actions.
         """
-        admin_token = get_token_admin_claim_ok()
+        admin_token = get_token_admin_claim()
         with mock.patch('dss.util.auth.authorize.Authorize.token', admin_token):
             with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
                 auth = AuthWrapper()
