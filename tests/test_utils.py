@@ -145,7 +145,7 @@ class TestSecurity(unittest.TestCase):
                     security.assert_authorized_group(['dbio'], token_info)
 
     @mock.patch('dss.Config._OIDC_AUDIENCE', new=["https://dev.ucsc-cgp-redwood.org/",
-                                                  "https://data.ucsc-cgp.redwood.org/"])
+                                                  "https://data.ucsc-cgp-redwood.org/"])
     @mock.patch('dss.Config._TRUSTED_GOOGLE_PROJECTS', new=['cool-project-188401.iam.gserviceaccount.com'])
     def test_verify_jwt_multiple_audience(self):
         jwts_positive = [
