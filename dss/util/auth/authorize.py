@@ -109,6 +109,17 @@ class TokenEmailMixin(TokenMixin):
         return
 
 
+def always_allow_admins(f):
+    """Decorate an auth check so that admins are always allowed"""
+    def wrapper(*args):
+        slf = args[0]
+        if slf._is_admin():
+            return  # Skip calling the auth function altogether
+        else:
+            return f(*args)
+    return wrapper
+
+
 class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
     @property
     def admin_emails(self):
@@ -116,8 +127,8 @@ class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
         admin_emails = Config.get_admin_user_emails()
         return admin_emails
 
-    def _assert_admin(self):
-        """Boolean property: is token_email an admin email"""
+    def _is_admin(self):
+        """Boolean property: is token_email an admin email?"""
         if self.token_email:
             if self.token_email in self.admin_emails:
                 return True
