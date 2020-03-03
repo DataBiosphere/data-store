@@ -2,7 +2,7 @@ import requests
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from .authorize import Authorize
+from .authorize import Authorize, always_allow_admins
 
 
 class FlacMixin(Authorize):
@@ -105,40 +105,38 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
         executed_method = self.valid_methods[method]
         executed_method(**kwargs)
 
+    @always_allow_admins
     def _create(self, **kwargs):
         """Auth checks for 'create' API actions"""
-        # Only check that a user is a member of a list of allowed organizations
+        # Only check that the token group is in the security decorator's list of allowed groups
         self.assert_required_parameters(kwargs, ['groups'])
         self._assert_authorized_group(kwargs['groups'])
         return
 
+    @always_allow_admins
     def _read(self, **kwargs):
         """Auth checks for 'read' API actions"""
         # Data is public if there is no FLAC table entry.
         self._assert_authorized_flac(**kwargs)
         return
 
+    @always_allow_admins
     def _update(self, **kwargs):
         """Auth checks for 'update' API actions"""
-        try:
-            # Admins are always allowed to update
-            self._assert_admin()
-            return
-        except DSSException:
-            # Update requires read and create access
-            # Assert user has read access
-            read_kwargs = kwargs.copy()
-            read_kwargs['method'] = 'read'
-            self._read(**read_kwargs)
+        # Update requires read and create access
+        # Assert user has read access
+        read_kwargs = kwargs.copy()
+        read_kwargs['method'] = 'read'
+        self._read(**read_kwargs)
+        # Assert user has create access
+        create_kwargs = kwargs.copy()
+        create_kwargs['method'] = 'create'
+        self.assert_required_parameters(create_kwargs, ['groups'])
+        self._create(**create_kwargs)
+        return
 
-            # Assert user has create access
-            create_kwargs = kwargs.copy()
-            create_kwargs['method'] = 'create'
-            self.assert_required_parameters(create_kwargs, ['groups'])
-            self._create(**create_kwargs)
-        pass
-
+    @always_allow_admins
     def _delete(self, **kwargs):
         """Auth checks for 'delete' API actions"""
-        # Only admins allowed
-        self._assert_admin()
+        err = "Delete action is only allowed for admin users"
+        raise DSSForbiddenException(err)
