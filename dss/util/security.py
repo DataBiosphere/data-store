@@ -99,24 +99,31 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     service_name, _, service_domain = issuer.partition("@")
     if service_domain in Config.get_trusted_google_projects() and issuer == token['sub']:
         return
-    logger.info(f"Token issuer not authorized: {issuer}")
-    raise DSSForbiddenException()
+    err = f"Token issuer not authorized: {issuer}"
+    logger.info(err)
+    raise DSSForbiddenException(err)
 
 
 def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given group under the group claim key"""
-    if token.get(Config.get_OIDC_group_claim()) in groups:
+    group_claim = Config.get_OIDC_group_claim()
+    group = token.get(group_claim)
+    if group in groups:
         return
-    logger.info(f"User not in any authorized groups: {groups}, {token}")
-    raise DSSForbiddenException()
+    err = f"User not in any authorized groups: user's group is {group}, authorized groups are {groups}"
+    logger.info(err)
+    raise DSSForbiddenException(err)
 
 
 def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
     """Assert that a JWT token contains the given email under the email claim key"""
-    if token.get(Config.get_OIDC_email_claim()) in emails:
+    email_claim = Config.get_OIDC_email_claim()
+    email = token.get(email_claim)
+    if email in emails:
         return
-    logger.info(f"User not in authorized emails: {emails}, {token}")
-    raise DSSForbiddenException()
+    err = f"User not in authorized emails: user's email is {email}, authorized emails are {emails}"
+    logger.info(err)
+    raise DSSForbiddenException(err)
 
 
 def assert_security(**decorator_kwargs):
