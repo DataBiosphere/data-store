@@ -99,9 +99,8 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     service_name, _, service_domain = issuer.partition("@")
     if service_domain in Config.get_trusted_google_projects() and issuer == token['sub']:
         return
-    err = f"Token issuer not authorized: {issuer}"
-    logger.info(err)
-    raise DSSForbiddenException(err)
+    logger.info(f"Token issuer not authorized: {issuer}")
+    raise DSSForbiddenException()
 
 
 def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
@@ -110,9 +109,8 @@ def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
     group = token.get(group_claim)
     if group in groups:
         return
-    err = f"User is not authorized to access this resource: user's group is {group}, authorized groups are {groups}"
-    logger.info(err)
-    raise DSSForbiddenException(err)
+    logger.info(f"User is not in authorized groups: user's group is {group}, authorized groups are {groups}")
+    raise DSSForbiddenException()
 
 
 def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
@@ -121,9 +119,8 @@ def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
     email = token.get(email_claim)
     if email in emails:
         return
-    err = f"User is not authorized to access this resource: user's email is {email}, authorized emails are {emails}"
-    logger.info(err)
-    raise DSSForbiddenException(err)
+    logger.info(f"User is not authorized: user's email is {email}, authorized emails are {emails}")
+    raise DSSForbiddenException()
 
 
 def assert_security(**decorator_kwargs):
