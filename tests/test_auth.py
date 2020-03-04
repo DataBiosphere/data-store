@@ -169,15 +169,14 @@ class TestAuth0Auth(unittest.TestCase):
         """
         valid_grp = 'dbio'
         valid_token = get_token_group_claim(valid_grp)
-        with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
-            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
-                auth = AuthWrapper()
-                auth.security_flow(method='create', groups=[valid_grp])
-                auth.security_flow(method='read')
-                auth.security_flow(method='update', groups=[valid_grp])
-                # Admins only
-                with self.assertRaises(DSSForbiddenException):
-                    auth.security_flow(method='delete')
+        self._test_security_flow(valid_token, valid_grp)
+
+    def test_unauthorized_security_flow(self):
+        valid_grp = 'dbio'
+        invalid_grp = 'not-a-valid-group-not-even-a-little-bit'
+        invalid_token = get_token_group_claim(invalid_grp)
+        with self.assertRaises(DSSException):
+            self._test_security_flow(invalid_token, valid_grp)
 
     def test_admin_security_flow(self):
         """
@@ -185,40 +184,30 @@ class TestAuth0Auth(unittest.TestCase):
         to do all actions.
         """
         admin_token = get_token_admin_claim()
-        with mock.patch('dss.util.auth.authorize.Authorize.token', admin_token):
-            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
-                auth = AuthWrapper()
-                valid_grp = 'dbio'
-                # These should all allow admins
-                auth.security_flow(method='create', groups=[valid_grp])
-                auth.security_flow(method='read')
-                auth.security_flow(method='update', groups=[valid_grp])
-                # Admins only
-                auth.security_flow(method='delete')
+        self._test_security_flow(admin_token, '', admin=True)
+        self._test_security_flow(admin_token, 'dbio', admin=True)
+        self._test_security_flow(admin_token, 'any-group-should-work', admin=True)
 
-    def test_unauthorized_security_flow(self):
+    def _test_security_flow(self, token, allowed_grp, admin=False):
         """
-        Create an invalid (empty) token, and run through the security flow to verify unauthorized users
-        are only allowed a limited set of actions.
+        Private method: given a token and an allowed group, use the token to mock the Authorize class,
+        then test the security flow.
+
+        :param token: the token to use to mock Authorize.token
+        :param allowed_grp: use this group as the allowed group during the security flow
+        :param bool admin: is this user an admin? or will admin endpoints raise exceptions?
         """
-        invalid_token = {}
-        with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
-            # Set auth backend
-            with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
-                valid_grp = 'dbio'
-                # Check failure due to empty token
+        with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
+            with mock.patch('dss.util.auth.authorize.Authorize.token', token):
                 auth = AuthWrapper()
-                with self.assertRaises(DSSException):
-                    auth.security_flow(method='create', groups=[valid_grp])
-                    auth.security_flow(method='update', groups=[valid_grp])
+                auth.security_flow(method='create', groups=[allowed_grp])
+                auth.security_flow(method='read')
+                auth.security_flow(method='update', groups=[allowed_grp])
+                if admin:
                     auth.security_flow(method='delete')
-                # Check failure due to invalid method signature
-                auth = AuthWrapper()
-                with self.assertRaises(DSSException):
-                    auth.security_flow()  # Missing required method kwarg
-                    auth.security_flow(method='create')  # Missing required groups kwarg
-                    auth.security_flow(method='update')  # Missing required groups kwarg
-                    auth.security_flow(method='delete')  # Not an admin
+                else:
+                    with self.assertRaises(DSSForbiddenException):
+                        auth.security_flow(method='delete')
 
 
 if __name__ == "__main__":
