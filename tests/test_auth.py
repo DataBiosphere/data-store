@@ -12,7 +12,7 @@ sys.path.insert(0, pkg_root)  # noqa
 import dss
 from dss import DSSException, DSSForbiddenException, Config
 from dss.util.auth import AuthWrapper
-from dss.util.auth.authorize import (AuthorizeBase, TokenMixin, TokenGroupMixin, TokenEmailMixin)
+from dss.util.auth.authorize import (AuthorizeBase, TokenMixin, TokenGroupMixin, TokenEmailMixin, AdminStatusMixin)
 from tests.infra import testmode
 from tests import get_service_jwt, UNAUTHORIZED_GCP_CREDENTIALS
 
@@ -102,12 +102,21 @@ class TestAuthMixins(unittest.TestCase):
         invalid_email = 'invalid-email@dss_test-auth_test-token-email-mixin'
         valid_token = get_token_email_claim(valid_email)
         invalid_token = get_token_email_claim(invalid_email)
-        # Check valid and invalid tokens
         with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', valid_token):
             tem._assert_authorized_email([valid_email])
         with mock.patch('dss.util.auth.authorize.TokenEmailMixin.token', invalid_token):
             with self.assertRaises(DSSException):
                 tem._assert_authorized_email([valid_email])
+
+    def test_admin_status_mixin(self):
+        asm = AdminStatusMixin()
+        admin_email = asm.admin_emails[0]
+        admin_token = get_token_email_claim(admin_email)
+        notadmin_token = get_token_email_claim('not-an-admin@dss_test-auth_test-admin-mixin')
+        with mock.patch('dss.util.auth.authorize.AdminStatusMixin.token', admin_token):
+            self.assertTrue(asm._is_admin())
+        with mock.patch('dss.util.auth.authorize.AdminStatusMixin.token', notadmin_token):
+            self.assertFalse(asm._is_admin())
 
 
 class TestFusilladeAuth(unittest.TestCase):
