@@ -149,7 +149,7 @@ class TestAuthMixins(unittest.TestCase):
         valid_token = get_token_auth0_claim(valid_group, valid_auth0authz_group)
         with mock.patch('dss.util.auth.auth0.Auth0AuthZGroupsMixin.token', valid_token):
             # Test access to A0AZ groups attribute
-            self.assertEqual(a0az.auth0authz_groups(), [valid_auth0authz_group])
+            self.assertEqual(a0az.auth0authz_groups, [valid_auth0authz_group])
             # Test ability to determine if A0AZ groups intersect a provided list
             all_groups = [valid_auth0authz_group, invalid_auth0authz_group]
             self.assertTrue(a0az.assert_auth0authz_groups_intersects(all_groups))
