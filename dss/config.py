@@ -117,6 +117,7 @@ class Config:
     _NOTIFICATION_SENDER_EMAIL: typing.Optional[str] = None
     _ADMIN_USER_EMAILS_LIST: typing.Optional[typing.List[str]] = None
     _TRUSTED_GOOGLE_PROJECTS: typing.Optional[typing.List[str]] = None
+    _OIDC_AUTH0_TOKEN_CLAIM: typing.Optional[str] = None
     _OIDC_AUDIENCE: typing.Optional[typing.List[str]] = None
     _AUTH_URL: typing.Optional[str] = None
     _AUTH_BACKEND: typing.Optional[str] = None
@@ -391,6 +392,18 @@ class Config:
         val_list = [j.strip() for j in val_str.split(",")]
         Config._ADMIN_USER_EMAILS_LIST = val_list
         return Config._ADMIN_USER_EMAILS_LIST
+
+    @staticmethod
+    def get_auth0_claim():
+        backend = self.get_auth_backend()
+        if backend == "auth0":
+            if Config._OIDC_AUTH0_TOKEN_CLAIM is None:
+                val = Config._get_required_envvar("OIDC_AUTH0_TOKEN_CLAIM")
+                Config._OIDC_AUTH0_TOKEN_CLAIM = val
+        else:
+            raise Exception(f"auth backend misconfigured: expected \"auth0\" but got \"{backend}\"")
+
+        return Config._OIDC_AUTH0_TOKEN_CLAIM
 
     @staticmethod
     def debug_level() -> int:
