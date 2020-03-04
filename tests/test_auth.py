@@ -17,25 +17,25 @@ from tests.infra import testmode
 from tests import get_service_jwt, UNAUTHORIZED_GCP_CREDENTIALS
 
 
-def get_token_issuer_claim(iss):
+def get_token_issuer_claim(iss: str) -> dict:
     token = {}
     token['iss'] = iss
     return token
 
 
-def get_token_email_claim(eml):
+def get_token_email_claim(eml: str) -> dict:
     token = get_token_issuer_claim('')
     token[Config.get_OIDC_email_claim()] = eml
     return token
 
 
-def get_token_group_claim(grp):
+def get_token_group_claim(grp: str) -> dict:
     token = get_token_email_claim('')
     token[Config.get_OIDC_group_claim()] = grp
     return token
 
 
-def get_token_admin_claim():
+def get_token_admin_claim() -> dict:
     token = get_token_issuer_claim('')
     admin_user_emails = Config.get_admin_user_emails()
     token[Config.get_OIDC_email_claim()] = admin_user_emails[0]
