@@ -11,7 +11,9 @@ sys.path.insert(0, pkg_root)  # noqa
 import dss
 from dss import DSSException, DSSForbiddenException, Config
 from dss.util.auth import AuthWrapper
-from dss.util.auth.authorize import (AuthorizeBase, TokenMixin, TokenGroupMixin, TokenEmailMixin, AdminStatusMixin)
+from dss.util.auth.authorize import \
+    (AuthorizeBase, TokenMixin, TokenGroupMixin, TokenEmailMixin, AdminStatusMixin, always_allow_admins)
+from dss.util.auth.auth0 import (FlacMixin, Auth0AuthZGroupsMixin)
 from tests.infra import testmode
 from tests import get_service_jwt, UNAUTHORIZED_GCP_CREDENTIALS
 
@@ -22,15 +24,30 @@ def get_token_issuer_claim(iss: str) -> dict:
     return token
 
 
-def get_token_email_claim(eml: str) -> dict:
-    token = get_token_issuer_claim('')
+def get_token_email_claim(eml: str, iss: str = '') -> dict:
+    token = get_token_issuer_claim(iss)
     token[Config.get_OIDC_email_claim()] = eml
     return token
 
 
-def get_token_group_claim(grp: str) -> dict:
-    token = get_token_email_claim('')
+def get_token_group_claim(grp: str, eml: str = '', iss: str = '') -> dict:
+    token = get_token_email_claim(eml, iss)
     token[Config.get_OIDC_group_claim()] = grp
+    return token
+
+
+def get_token_auth0_claim(grp: str, auth0authzgrp: str, eml: str = '', iss: str = '') -> dict:
+    """
+    Add a claim at {OIDC_AUDIENCE}/auth0 to mimick what the Auth0 AuthZ extension adds.
+    User must specify both token group (grp) and Auth0 AuthZ group (auth0authzgrp).
+    """
+    token = get_token_group_claim(grp, eml, iss)
+    auth0claim = Auth0AuthZGroupsMixin.get_auth0authz_claim()
+    token[auth0claim] = {
+        "groups": [auth0authzgrp]
+        "roles": [],
+        "permissions": []
+    }
     return token
 
 
@@ -116,6 +133,27 @@ class TestAuthMixins(unittest.TestCase):
             self.assertTrue(asm._is_admin())
         with mock.patch('dss.util.auth.authorize.AdminStatusMixin.token', notadmin_token):
             self.assertFalse(asm._is_admin())
+
+    def test_flac_mixin(self):
+        FlacMixin()
+
+    def test_auth0authz_mixin(self):
+        # Test class method to return the Auth0 claim
+        ok_claim = f"{Config.get_audience()[0]}auth0"
+        self.assertTrue(Auth0AuthZGroupsMixin.get_auth0authz_claim(), ok_claim)
+        # Create a token with the correct Auth0 claim
+        a0az = Auth0AuthZGroupsMixin()
+        valid_group = 'dbio'
+        valid_auth0authz_group = 'foobar'
+        invalid_auth0authz_group = 'not-foobar'
+        valid_token = get_token_auth0_claim(valid_group, valid_auth0authz_group)
+        with mock.patch('dss.util.auth.auth0.Auth0AuthZGroupsMixin.token', valid_token):
+            # Test access to A0AZ groups attribute
+            self.assertEqual(a0az.auth0authz_groups(), [valid_auth0authz_group])
+            # Test ability to determine if A0AZ groups intersect a provided list
+            all_groups = [valid_auth0authz_group, invalid_auth0authz_group]
+            self.assertTrue(a0az.assert_auth0authz_groups_intersects(all_groups)
+
 
 
 class TestFusilladeAuth(unittest.TestCase):
