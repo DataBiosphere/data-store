@@ -47,7 +47,7 @@ class AsyncStateItem:
     def get(cls, key: str) -> typing.Any:
         try:
             item = get_item(table=cls.table, hash_key=key)
-            body = json.loads(item)
+            body = json.loads(item.get('body'))
             item_class = _all_subclasses(cls)[body['_type']]
             return item_class(key, body)
         except DynamoDBItemNotFound:

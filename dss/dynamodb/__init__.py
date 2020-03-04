@@ -1,6 +1,10 @@
+import logging
+import typing
 from typing import Generator, Optional
 
 from dss.util.aws.clients import dynamodb as db  # type: ignore
+
+logger = logging.getLogger(__name__)
 
 
 class DynamoDBItemNotFound(Exception):
@@ -43,26 +47,27 @@ def put_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, value
     db.put_item(**query)
 
 
-def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, return_key: str = 'body') -> str:
+def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None) -> typing.Dict:
     """
     Get associated value for a given set of keys from a dynamoDB table.
-
-    Will determine the type of db this is being called on by the number of keys provided (omit
-    sort_key to GET a value from a db with only 1 primary key).
-
     :param table: Name of the table in AWS.
     :param str hash_key: 1st primary key that can be used to fetch associated sort_keys and values.
     :param str sort_key: 2nd primary key, used with hash_key to fetch a specific value.
-                         Note: If not specified, this will GET only 1 key (hash_key) and 1 value.
-    :param str return_key: Either "body" (to return all values) or "sort_key" (to return all 2nd primary keys).
-    :return: None or str
+    :return: item object from ddb (dict), with attribute types omitted
     """
+    return_value = {}
     query = {'TableName': table,
              'Key': _format_item(hash_key=hash_key, sort_key=sort_key, value=None)}
-    item = db.get_item(**query).get('Item')
+    try:
+        item = db.get_item(**query).get('Item')
+    except db.exceptions.ValidationException as ex:
+        logger.error(ex)
+        raise
     if item is None:
         raise DynamoDBItemNotFound(f'Query failed to fetch item from database: {query}')
-    return item[return_key]['S']
+    for k, v in item.items():  # strips out ddb typing info
+        return_value[k] = [*v.values()][0]
+    return return_value
 
 
 def get_primary_key_items(*, table: str, key: str, return_key: str = 'body') -> Generator[str, None, None]:
