@@ -140,7 +140,7 @@ class TestFusilladeAuth(unittest.TestCase):
             # Test that security flow succeeds for each auth backend
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
-                auth.security_flow(groups=[allowed_grp])
+                auth.security_flow(groups=[allowed_grp])  # type: ignore
 
 
 class TestAuth0Auth(unittest.TestCase):
