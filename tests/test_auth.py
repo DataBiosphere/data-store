@@ -185,14 +185,14 @@ class TestAuth0Auth(unittest.TestCase):
         with mock.patch("dss.Config.get_auth_backend", return_value="auth0"):
             with mock.patch('dss.util.auth.authorize.Authorize.token', token):
                 auth = AuthWrapper()
-                auth.security_flow(method='create', groups=[allowed_grp])
-                auth.security_flow(method='read')
-                auth.security_flow(method='update', groups=[allowed_grp])
+                auth.security_flow(method='create', groups=[allowed_grp])  # type: ignore 
+                auth.security_flow(method='read')  # type: ignore 
+                auth.security_flow(method='update', groups=[allowed_grp])  # type: ignore 
                 if admin:
-                    auth.security_flow(method='delete')
+                    auth.security_flow(method='delete')  # type: ignore 
                 else:
                     with self.assertRaises(DSSForbiddenException):
-                        auth.security_flow(method='delete')
+                        auth.security_flow(method='delete')  # type: ignore 
 
 
 if __name__ == "__main__":
