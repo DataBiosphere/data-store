@@ -33,23 +33,21 @@ class Auth0AuthZGroupsMixin(Authorize):
     (Note: the Auth0 AuthZ extension adds groups, roles, and permissions,
     but here we just use groups.)
     """
-    def _get_auth0authz_claim(self):
+    @classmethod
+    def get_auth0authz_claim(self):
         oidc_audience = Config.get_audience()[0]
         return f"{oidc_audience}auth0"
-
-    def _get_auth0authz_group_claim(self):
-        return "groups"
 
     @property
     def auth0authz_groups(self):
         """Property for the groups added to the JWT by the Auth0 AuthZ plugin"""
         # First get the portion of the token added by the Auth0 AuthZ extension
-        auth0authz_claim = self._get_auth0authz_claim()
+        auth0authz_claim = self.get_auth0authz_claim()
         self.assert_required_parameters(self.token, [auth0authz_claim])
         auth0authz_token = self.token[auth0authz_claim]
 
         # Second extract the groups from this portion
-        auth0authz_groups_claim = self._get_auth0authz_groups_claim()
+        auth0authz_groups_claim = "groups"
         self.assert_required_parameters(auth0authz_token, [auth0authz_groups_claim])
         groups = self.token[auth0authz_claim][auth0authz_groups_claim]
         return groups
