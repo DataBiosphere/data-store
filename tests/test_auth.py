@@ -123,29 +123,38 @@ class TestFusilladeAuth(unittest.TestCase):
     """
     Test security flow for Fusillade authentication and authorization layer.
     """
-    def test_authorized_security_flow(self):
-        valid_grp = 'dbio'
-        valid_token = get_token_group_claim(valid_grp)
-        with mock.patch('dss.util.auth.authorize.Authorize.token', valid_token):
-
+    def _test_security_flow(self, token: dict, allowed_grp: str):
+        with mock.patch('dss.util.auth.authorize.Authorize.token', token):
             # Test that security flow succeeds for each auth backend
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 auth = AuthWrapper()
-                auth.security_flow(groups=[valid_grp])
+                auth.security_flow(groups=[allowed_grp])
+
+    def test_authorized_security_flow(self):
+        valid_grp = 'dbio'
+        valid_token = get_token_group_claim(valid_grp)
+        self._test_security_flow(valid_token, valid_grp)
 
     def test_unauthorized_security_flow(self):
+        valid_grp = 'dbio'
+        invalid_grp = 'not-a-valid-grp'
+        invalid_token = get_token_group_claim(invalid_grp)
+        with self.assertRaises(DSSException):
+            self._test_security_flow(invalid_token, valid_grp)
+
+    def test_unauthorized_security_flow(self):
+        valid_grp = 'dbio'
+        invalid_grp = 'not-a-valid-grp'
         invalid_token = {}
+        grpinvalid_token = get_token_group_claim(invalid_grp)
         with mock.patch('dss.util.auth.authorize.Authorize.token', invalid_token):
-            # Set auth backend
             with mock.patch("dss.Config.get_auth_backend", return_value="fusillade"):
                 valid_grp = 'dbio'
-                # Check failure due to empty token
-                with self.assertRaises(DSSForbiddenException):
-                    auth = AuthWrapper()
-                    auth.security_flow(groups=[valid_grp])
-                # Check failure due to invalid method signature
                 with self.assertRaises(DSSException):
                     auth = AuthWrapper()
+                    # Check failure due to empty token
+                    auth.security_flow(groups=[valid_grp])
+                    # Check failure due to invalid method signature
                     auth.security_flow()
 
 
