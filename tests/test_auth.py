@@ -152,7 +152,7 @@ class TestAuthMixins(unittest.TestCase):
             self.assertEqual(a0az.auth0authz_groups(), [valid_auth0authz_group])
             # Test ability to determine if A0AZ groups intersect a provided list
             all_groups = [valid_auth0authz_group, invalid_auth0authz_group]
-            self.assertTrue(a0az.assert_auth0authz_groups_intersects(all_groups)
+            self.assertTrue(a0az.assert_auth0authz_groups_intersects(all_groups))
 
 
 
