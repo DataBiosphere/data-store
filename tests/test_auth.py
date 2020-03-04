@@ -158,7 +158,7 @@ class TestAuth0Auth(unittest.TestCase):
 
     def test_unauthorized_security_flow(self):
         valid_grp = 'dbio'
-        invalid_grp = 'not-a-valid-group-not-even-a-little-bit'
+        invalid_grp = 'not-a-valid-group_dss_test-auth_test-auth0'
         invalid_token = get_token_group_claim(invalid_grp)
         with self.assertRaises(DSSException):
             self._test_security_flow(invalid_token, valid_grp)
