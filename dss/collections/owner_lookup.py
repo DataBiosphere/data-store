@@ -23,7 +23,8 @@ def put_collection(owner: str, collection_fqid: str, permission_level: str = 'ow
 def get_collection(owner: str, collection_fqid: str) -> None:
     """
     Get a collection FQID from the collection DB, and return it back.
-    This method is useful b/c it raises exception if the given collection is not in the collection DB.
+    This method is useful b/c it raises an exception if the given collection is not in the collection DB.
+    Also see scripts/update_collection_db.py
     """
     collection_record = dynamodb.get_item(table=collection_db_table,
                                           hash_key=owner,
