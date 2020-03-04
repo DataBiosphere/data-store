@@ -401,7 +401,8 @@ class Config:
                 val = Config._get_required_envvar("OIDC_AUTH0_TOKEN_CLAIM")
                 Config._OIDC_AUTH0_TOKEN_CLAIM = val
         else:
-            raise Exception(f"auth backend misconfigured: expected \"auth0\" but got \"{backend}\"")
+            raise Exception("auth backend misconfigured: Config.get_auth0_claim() expected "
+                            f"\"auth0\" but got \"{backend}\"")
 
         return Config._OIDC_AUTH0_TOKEN_CLAIM
 
