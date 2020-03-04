@@ -137,6 +137,7 @@ AUTH_URL=https://dev-4lyab62k.auth0.com
 OPENID_PROVIDER=https://dev-4lyab62k.auth0.com/
 OIDC_EMAIL_CLAIM="${OIDC_AUDIENCE}email"
 OIDC_GROUP_CLAIM="${OIDC_AUDIENCE}group"
+OIDC_AUTH0_TOKEN_CLAIM="${OIDC_AUDIENCE}auth0"
 AUTH_BACKEND=Fusillade
 
 NOTIFY_URL=https://${API_DOMAIN_NAME}/internal/notify
