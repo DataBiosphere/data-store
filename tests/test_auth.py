@@ -76,7 +76,7 @@ class TestAuthMixins(unittest.TestCase):
     def test_token_mixin(self):
         tm = TokenMixin()
         valid_token = get_token_issuer_claim(Config.get_openid_provider())
-        invalid_token = get_token_issuer_claim("dss_test-auth_test-token-mixin")
+        invalid_token = get_token_issuer_claim("invalid-issuer-auth_dss_test-auth_test-token-mixin")
         with mock.patch('dss.util.auth.authorize.TokenMixin.token', valid_token):
             self.assertEquals(tm.token, valid_token)
             tm._assert_authorized_issuer()
@@ -89,7 +89,7 @@ class TestAuthMixins(unittest.TestCase):
         tgm = TokenGroupMixin()
         valid_group = 'dbio'
         valid_token = get_token_group_claim(valid_group)
-        invalid_token = get_token_group_claim('dss_test-auth_test-token-group-mixin')
+        invalid_token = get_token_group_claim("invalid-group_dss_test-auth_test-token-group-mixin")
         with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', valid_token):
             tgm._assert_authorized_group([valid_group])
         with mock.patch('dss.util.auth.authorize.TokenGroupMixin.token', invalid_token):
