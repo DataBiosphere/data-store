@@ -8,6 +8,7 @@ collection_db_table = f"dss-collections-db-{os.environ['DSS_DEPLOYMENT_STAGE']}"
 
 
 def put_collection(owner: str, collection_fqid: str, permission_level: str = 'owner'):
+    """Put a new collection FQID into the collection DB."""
     try:
         dynamodb.put_item(table=collection_db_table,
                           hash_key=owner,
@@ -19,12 +20,16 @@ def put_collection(owner: str, collection_fqid: str, permission_level: str = 'ow
             raise
 
 
-# TODO figure out what this function does, appears only within unit tests, but why pass back sorted_key?
-def get_collection(owner: str, collection_fqid: str):
-    collection = dynamodb.get_item(table=collection_db_table,
-                                   hash_key=owner,
-                                   sort_key=collection_fqid)
-    return collection.get('sort_key')
+def get_collection(owner: str, collection_fqid: str) -> None:
+    """
+    Get a collection FQID from the collection DB, and return it back.
+    This method is useful b/c it raises an exception if the given collection is not in the collection DB.
+    Also see scripts/update_collection_db.py
+    """
+    collection_record = dynamodb.get_item(table=collection_db_table,
+                                          hash_key=owner,
+                                          sort_key=collection_fqid)
+    return collection_record.get('sort_key')
 
 
 def get_collection_fqids_for_owner(owner: str):
