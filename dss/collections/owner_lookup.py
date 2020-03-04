@@ -28,7 +28,7 @@ def get_collection(owner: str, collection_fqid: str) -> None:
     collection_record = dynamodb.get_item(table=collection_db_table,
                                           hash_key=owner,
                                           sort_key=collection_fqid)
-    return collection_record['sort_key']
+    return collection_record.get('sort_key')
 
 
 def get_collection_fqids_for_owner(owner: str):
