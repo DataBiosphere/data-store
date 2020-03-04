@@ -44,7 +44,7 @@ def get_token_auth0_claim(grp: str, auth0authzgrp: str, eml: str = '', iss: str 
     token = get_token_group_claim(grp, eml, iss)
     auth0claim = Auth0AuthZGroupsMixin.get_auth0authz_claim()
     token[auth0claim] = {
-        "groups": [auth0authzgrp]
+        "groups": [auth0authzgrp],
         "roles": [],
         "permissions": []
     }
@@ -153,7 +153,6 @@ class TestAuthMixins(unittest.TestCase):
             # Test ability to determine if A0AZ groups intersect a provided list
             all_groups = [valid_auth0authz_group, invalid_auth0authz_group]
             self.assertTrue(a0az.assert_auth0authz_groups_intersects(all_groups))
-
 
 
 class TestFusilladeAuth(unittest.TestCase):
