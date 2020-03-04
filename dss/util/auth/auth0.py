@@ -2,7 +2,7 @@ import requests
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
-from .authorize import Authorize
+from .authorize import Authorize, always_allow_admins
 
 
 class FlacMixin(Authorize):
@@ -33,23 +33,21 @@ class Auth0AuthZGroupsMixin(Authorize):
     (Note: the Auth0 AuthZ extension adds groups, roles, and permissions,
     but here we just use groups.)
     """
-    def _get_auth0authz_claim(self):
+    @classmethod
+    def get_auth0authz_claim(self):
         oidc_audience = Config.get_audience()[0]
         return f"{oidc_audience}auth0"
-
-    def _get_auth0authz_group_claim(self):
-        return "groups"
 
     @property
     def auth0authz_groups(self):
         """Property for the groups added to the JWT by the Auth0 AuthZ plugin"""
         # First get the portion of the token added by the Auth0 AuthZ extension
-        auth0authz_claim = self._get_auth0authz_claim()
+        auth0authz_claim = self.get_auth0authz_claim()
         self.assert_required_parameters(self.token, [auth0authz_claim])
         auth0authz_token = self.token[auth0authz_claim]
 
         # Second extract the groups from this portion
-        auth0authz_groups_claim = self._get_auth0authz_groups_claim()
+        auth0authz_groups_claim = "groups"
         self.assert_required_parameters(auth0authz_token, [auth0authz_groups_claim])
         groups = self.token[auth0authz_claim][auth0authz_groups_claim]
         return groups
@@ -105,40 +103,38 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
         executed_method = self.valid_methods[method]
         executed_method(**kwargs)
 
+    @always_allow_admins
     def _create(self, **kwargs):
         """Auth checks for 'create' API actions"""
-        # Only check that a user is a member of a list of allowed organizations
+        # Only check that the token group is in the security decorator's list of allowed groups
         self.assert_required_parameters(kwargs, ['groups'])
         self._assert_authorized_group(kwargs['groups'])
         return
 
+    @always_allow_admins
     def _read(self, **kwargs):
         """Auth checks for 'read' API actions"""
         # Data is public if there is no FLAC table entry.
         self._assert_authorized_flac(**kwargs)
         return
 
+    @always_allow_admins
     def _update(self, **kwargs):
         """Auth checks for 'update' API actions"""
-        try:
-            # Admins are always allowed to update
-            self._assert_admin()
-            return
-        except DSSException:
-            # Update requires read and create access
-            # Assert user has read access
-            read_kwargs = kwargs.copy()
-            read_kwargs['method'] = 'read'
-            self._read(**read_kwargs)
+        # Update requires read and create access
+        # Assert user has read access
+        read_kwargs = kwargs.copy()
+        read_kwargs['method'] = 'read'
+        self._read(**read_kwargs)
+        # Assert user has create access
+        create_kwargs = kwargs.copy()
+        create_kwargs['method'] = 'create'
+        self.assert_required_parameters(create_kwargs, ['groups'])
+        self._create(**create_kwargs)
+        return
 
-            # Assert user has create access
-            create_kwargs = kwargs.copy()
-            create_kwargs['method'] = 'create'
-            self.assert_required_parameters(create_kwargs, ['groups'])
-            self._create(**create_kwargs)
-        pass
-
+    @always_allow_admins
     def _delete(self, **kwargs):
         """Auth checks for 'delete' API actions"""
-        # Only admins allowed
-        self._assert_admin()
+        err = "Delete action is only allowed for admin users"
+        raise DSSForbiddenException(err)
