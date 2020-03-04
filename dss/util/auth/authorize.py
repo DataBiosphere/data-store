@@ -1,3 +1,4 @@
+import json
 import typing
 import logging
 import requests
@@ -79,6 +80,7 @@ class TokenGroupMixin(TokenMixin):
     def token_group(self):
         """Property for the user's JWT group claim"""
         group_claim = Config.get_OIDC_group_claim()
+        self.assert_required_parameters(self.token, [group_claim])
         return self.token[group_claim]
 
     def _assert_authorized_group(self, groups):
@@ -98,6 +100,7 @@ class TokenEmailMixin(TokenMixin):
     def token_email(self):
         """Property for the user's JWT email claim"""
         email_claim = Config.get_OIDC_email_claim()
+        self.assert_required_parameters(self.token, [email_claim])
         return self.token[email_claim]
 
     def _assert_authorized_email(self, emails):
@@ -107,5 +110,33 @@ class TokenEmailMixin(TokenMixin):
         return
 
 
-class Authorize(TokenGroupMixin, TokenEmailMixin):
+def always_allow_admins(f):
+    """Decorate an auth check so that admins are always allowed"""
+    def wrapper(*args, **kwargs):
+        slf = args[0]  # arg[0] of method call is self
+        if slf._is_admin():
+            # Skip calling the auth function altogether
+            logger.info("""Admin action allowed with token: %s""", json.dumps(slf.token))
+            return
+        else:
+            return f(*args, **kwargs)
+    return wrapper
+
+
+class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
+    @property
+    def admin_emails(self):
+        """Property for the list of admin user emails"""
+        admin_emails = Config.get_admin_user_emails()
+        return admin_emails
+
+    def _is_admin(self):
+        """Boolean property: is token_email an admin email?"""
+        if self.token_email:
+            if self.token_email in self.admin_emails:
+                return True
+        return False
+
+
+class Authorize(AdminStatusMixin):
     pass
