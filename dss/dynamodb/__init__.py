@@ -1,14 +1,13 @@
+import logging
 import typing
 from typing import Generator, Optional
 
 from dss.util.aws.clients import dynamodb as db  # type: ignore
 
+logger = logging.getLogger(__name__)
+
 
 class DynamoDBItemNotFound(Exception):
-    pass
-
-
-class SchemaMismatch(Exception):
     pass
 
 
@@ -61,8 +60,9 @@ def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None) -> ty
              'Key': _format_item(hash_key=hash_key, sort_key=sort_key, value=None)}
     try:
         item = db.get_item(**query).get('Item')
-    except db.exceptions.ValidationException:
-        raise SchemaMismatch(f'Query schema {query} does not match table {table}')
+    except db.exceptions.ValidationException as ex:
+        logger.error(ex)
+        raise
     if item is None:
         raise DynamoDBItemNotFound(f'Query failed to fetch item from database: {query}')
     for k, v in item.items():  # strips out ddb typing info
