@@ -13,6 +13,7 @@ sys.path.insert(0, pkg_root)  # noqa
 import dss
 from dss import DSSException, DSSForbiddenException, Config
 from dss.config import Replica
+from dss.dynamodb import get_item
 from dss.logging import configure_test_logging
 from dss.util import UrlBuilder, security, multipart_parallel_upload
 from dss.util.aws import ARN
@@ -247,6 +248,37 @@ class TestSecurity(unittest.TestCase):
     @staticmethod
     def restore_email_claims(old):
         os.environ['OIDC_EMAIL_CLAIM'] = old
+
+
+@testmode.standalone
+class TestDynamodbUtils(unittest.TestCase):
+
+    def test_get_item(self):
+        """
+        Test out functionality of removing the attribute types from a dynamodb response.
+        Example: {"foo": {"S": "bar"}} should become {"foo": "bar"}
+        """
+
+        formatted_item_attributes = {"sort_key": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z",
+                                     "hash_key": "travis-test@platform-hca.iam.gserviceaccount.com",
+                                     "body": "owner",
+                                     "string_set": ["GMAW", "FCAW", "GTAW"],
+                                     "list": [{"S": "Cookies"}, {"S": "Coffee"}, {"N", "3.14159"}]}
+
+        def mock_ddb_call():
+            return {"Item": {"sort_key": {"S": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z"},
+                             "hash_key": {"S": "travis-test@platform-hca.iam.gserviceaccount.com"},
+                             "body": {"S": "owner"},
+                             "string_set": {"SS": ["GMAW", "FCAW", "GTAW"]},
+                             "list": {"L": [{"S": "Cookies"}, {"S": "Coffee"}, {"N", "3.14159"}]}}}
+
+        with mock.patch('dss.dynamodb.db.get_item') as mock_get_item:
+            mock_get_item.return_value = mock_ddb_call()
+            data = get_item(table='mock_table', hash_key="travis-test@platform-hca.iam.gserviceaccount.com",
+                            sort_key="02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z")
+
+        self.assertDictEqual(data, formatted_item_attributes)
+
 
 if __name__ == '__main__':
     unittest.main()
