@@ -395,7 +395,7 @@ class Config:
 
     @staticmethod
     def get_auth0_claim():
-        backend = self.get_auth_backend()
+        backend = Config.get_auth_backend()
         if backend == "auth0":
             if Config._OIDC_AUTH0_TOKEN_CLAIM is None:
                 val = Config._get_required_envvar("OIDC_AUTH0_TOKEN_CLAIM")
