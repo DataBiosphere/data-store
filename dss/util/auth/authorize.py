@@ -133,7 +133,7 @@ class AdminStatusMixin(TokenGroupMixin, TokenEmailMixin):
     def _is_admin(self):
         """Boolean property: is token_email an admin email?"""
         if self.token_email:
-            if self.token_email in self.admin_emails:
+            if self.token_email.lower() in self.admin_emails:
                 return True
         return False
 

@@ -389,7 +389,7 @@ class Config:
     @staticmethod
     def get_admin_user_emails() -> typing.List[str]:
         val_str = Config._get_required_envvar("ADMIN_USER_EMAILS")
-        val_list = [j.strip() for j in val_str.split(",")]
+        val_list = [j.strip().lower() for j in val_str.split(",")]
         Config._ADMIN_USER_EMAILS_LIST = val_list
         return Config._ADMIN_USER_EMAILS_LIST
 
