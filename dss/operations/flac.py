@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 class FlacHandler:
     def __init__(self, argv: typing.List[str], args: argparse.Namespace):
         self.keys = args.keys.copy()
-        self.flac_lookup_table_name = f"dss-auth-lookup-${os.environ['DSS_DEPLOYMENT_STAGE']}"
-        if args.groups:
-            self.groups_to_use = args.groups.copy()
+        self.flac_lookup_table_name = f"dss-auth-lookup-{os.environ['DSS_DEPLOYMENT_STAGE']}"
 
     @staticmethod
     def _parse_key(key):
@@ -36,17 +34,17 @@ class FlacHandler:
         self.process_keys()
 
 
-checkout = dispatch.target("flac", help=__doc__)
+flac = dispatch.target("flac", help=__doc__)
 
 
-@checkout.action("inspect",
+@flac.action("get",
                  arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)})
-class Inspect(FlacHandler):
+class Get(FlacHandler):
     def process_keys(self):
         key_status = []
         for _key in self.keys:
             uuid, version = self._parse_key(_key)
-            temp_status = {"fqid": _key}
+            temp_status = {"key": _key}
             try:
                 flac_attributes = ddb.get_item(table=self.flac_lookup_table_name,hash_key=uuid)
             except ddb.DynamoDBItemNotFound:
@@ -55,21 +53,28 @@ class Inspect(FlacHandler):
             else:
                 temp_status.update(flac_attributes)
             key_status.append(temp_status)
-        print(json.dumps(key_status, index=2))
+        print(json.dumps(key_status, indent=2))
+        return key_status  # action_handler does not really use this, its just testing
 
 
-@checkout.action("add",
-                 arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)},
-                           {"--groups": dict(nargs="+", help="Groups to attach to a object", required=True)})
+@flac.action("add",
+                 arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True),
+                            "--groups": dict(nargs="+", help="Groups to attach to a object", required=True)})
 class Add(FlacHandler):
+    def __init__(self,  argv: typing.List[str], args: argparse.Namespace):
+        super().__init__(argv, args)
+        self.groups_to_use = list(set(args.groups.copy()))
+
     def process_keys(self):
         key_status = []
         update_expression = f"SET groups = :g"
-        expression_attribute_values = {":g": {"SS": [{"S", group} for group in self.groups_to_use]}}
+        expression_attribute_values = {":g": {"L": [{"S": group} for group in self.groups_to_use]}}
         for _key in self.keys:
             uuid, version = self._parse_key(_key)
             updated_attributes = ddb.update_item(table=self.flac_lookup_table_name, hash_key=uuid,
                                                  update_expression=update_expression,
                                                  expression_attribute_values=expression_attribute_values)
+            updated_attributes['key'] = _key
             key_status.append(updated_attributes)
-        print(json.dumps(key_status, index=2))
+        print(json.dumps(key_status, indent=2))
+        return key_status  # action_handler does not really use this, its just testing

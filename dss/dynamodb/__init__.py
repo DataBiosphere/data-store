@@ -172,6 +172,6 @@ def update_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, up
     if update_expression:
         query['UpdateExpression'] = update_expression
         query['ExpressionAttributeValues'] = expression_attribute_values
-        query['ReturnedValues'] = return_values
+        query['ReturnValues'] = return_values
     resp = db.update_item(**query)
     return _format_ddb_response(resp.get('Attributes'))
