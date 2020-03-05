@@ -127,6 +127,7 @@ securityDefinitions:
     x-audience: {{OIDC_AUDIENCE}}
     x-email-claim: {{OIDC_EMAIL_CLAIM}}
     x-group-claim: {{OIDC_GROUP_CLAIM}}
+    x-auth0-claim: {{OIDC_AUTH0_TOKEN_CLAIM}}
 paths:
   /search:
     post:
