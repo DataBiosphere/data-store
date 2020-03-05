@@ -22,7 +22,7 @@ def _format_item(hash_key: str, sort_key: Optional[str], value: Optional[str], t
     return item
 
 
-def _format_ddb_response(ddb_response_object: dict)-> typing.Dict:
+def _format_ddb_response(ddb_response_object: dict) -> typing.Dict:
     formatted_object = {}
     for k, v in ddb_response_object.items():  # strips out ddb typing info
         formatted_object[k] = [*v.values()][0]
@@ -150,7 +150,7 @@ def delete_item(*, table: str, hash_key: str, sort_key: Optional[str] = None):
 
 
 def update_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, update_expression: Optional[str],
-                expression_attribute_values: typing.Dict, return_values: str ='ALL_NEW'):
+                expression_attribute_values: typing.Dict, return_values: str = 'ALL_NEW'):
     """
     Update an item from a dynamoDB table.
     Will determine the type of db this is being called on by the number of keys provided (omit

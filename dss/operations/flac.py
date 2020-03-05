@@ -9,7 +9,7 @@ import json
 
 from dss import dynamodb as ddb
 from dss.operations import dispatch
-from dss.storage.identifiers import DSS_BUNDLE_KEY_REGEX, VERSION_REGEX, UUID_REGEX, FILE_PREFIX, TOMBSTONE_SUFFIX
+from dss.storage.identifiers import VERSION_REGEX, UUID_REGEX
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +38,7 @@ flac = dispatch.target("flac", help=__doc__)
 
 
 @flac.action("get",
-                 arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)})
+             arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)})
 class Get(FlacHandler):
     def process_keys(self):
         key_status = []
@@ -46,7 +46,7 @@ class Get(FlacHandler):
             uuid, version = self._parse_key(_key)
             temp_status = {"key": _key}
             try:
-                flac_attributes = ddb.get_item(table=self.flac_lookup_table_name,hash_key=uuid)
+                flac_attributes = ddb.get_item(table=self.flac_lookup_table_name, hash_key=uuid)
             except ddb.DynamoDBItemNotFound:
                 # nothing was found within the database
                 pass
@@ -58,10 +58,10 @@ class Get(FlacHandler):
 
 
 @flac.action("add",
-                 arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True),
-                            "--groups": dict(nargs="+", help="Groups to attach to a object", required=True)})
+             arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True),
+                        "--groups": dict(nargs="+", help="Groups to attach to a object", required=True)})
 class Add(FlacHandler):
-    def __init__(self,  argv: typing.List[str], args: argparse.Namespace):
+    def __init__(self, argv: typing.List[str], args: argparse.Namespace):
         super().__init__(argv, args)
         self.groups_to_use = list(set(args.groups.copy()))
 
