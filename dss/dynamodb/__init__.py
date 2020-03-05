@@ -22,6 +22,13 @@ def _format_item(hash_key: str, sort_key: Optional[str], value: Optional[str], t
     return item
 
 
+def _format_ddb_response(ddb_response_object: dict)-> typing.Dict:
+    formatted_object = {}
+    for k, v in ddb_response_object.items():  # strips out ddb typing info
+        formatted_object[k] = [*v.values()][0]
+    return formatted_object
+
+
 def put_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, value: str,
              dont_overwrite: Optional[str] = None, ttl: Optional[int] = None):
     """
@@ -55,7 +62,6 @@ def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None) -> ty
     :param str sort_key: 2nd primary key, used with hash_key to fetch a specific value.
     :return: item object from ddb (dict), with attribute types omitted
     """
-    return_value = {}
     query = {'TableName': table,
              'Key': _format_item(hash_key=hash_key, sort_key=sort_key, value=None)}
     try:
@@ -65,9 +71,7 @@ def get_item(*, table: str, hash_key: str, sort_key: Optional[str] = None) -> ty
         raise
     if item is None:
         raise DynamoDBItemNotFound(f'Query failed to fetch item from database: {query}')
-    for k, v in item.items():  # strips out ddb typing info
-        return_value[k] = [*v.values()][0]
-    return return_value
+    return _format_ddb_response(item)
 
 
 def get_primary_key_items(*, table: str, key: str, return_key: str = 'body') -> Generator[str, None, None]:
@@ -143,3 +147,31 @@ def delete_item(*, table: str, hash_key: str, sort_key: Optional[str] = None):
     query = {'TableName': table,
              'Key': _format_item(hash_key=hash_key, sort_key=sort_key, value=None)}
     db.delete_item(**query)
+
+
+def update_item(*, table: str, hash_key: str, sort_key: Optional[str] = None, update_expression: Optional[str],
+                expression_attribute_values: typing.Dict, return_values: str ='ALL_NEW'):
+    """
+    Update an item from a dynamoDB table.
+    Will determine the type of db this is being called on by the number of keys provided (omit
+    sort_key to UPDATE from a db with only 1 primary key).
+    NOTE:
+    https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_UpdateItem.html
+    :param table: Name of the table in AWS.
+    :param str hash_key: 1st primary key that can be used to fetch associated sort_keys and values.
+    :param str sort_key: 2nd primary key, used with hash_key to fetch a specific value.
+                         Note: If not specified, this will DELETE only 1 key (hash_key) and 1 value.
+    :param str update_expression: Expression used to update value, needs action to be performed and new value
+    :param str expression_attribute_values: attribute values to use from the expression
+    :param str return_values: return values to get back from the dynamodb API, defaults to 'ALL_NEW'
+                              which provides all item attributes after the update.
+    :return: None
+    """
+    query = {'TableName': table,
+             'Key': _format_item(hash_key=hash_key, sort_key=sort_key, value=None)}
+    if update_expression:
+        query['UpdateExpression'] = update_expression
+        query['ExpressionAttributeValues'] = expression_attribute_values
+        query['ReturnedValues'] = return_values
+    resp = db.update_item(**query)
+    return _format_ddb_response(resp.get('Attributes'))
