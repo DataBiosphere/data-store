@@ -1,8 +1,13 @@
 import requests
+import os
+import logging
 
 from dss import Config
+from dss import dynamodb as db
 from dss.error import DSSForbiddenException, DSSException
 from .authorize import Authorize, always_allow_admins
+
+logger = logging.getLogger(__name__)
 
 
 class FlacMixin(Authorize):
@@ -11,6 +16,8 @@ class FlacMixin(Authorize):
     access control (FLAC) table to check if a user is allowed
     to access a given UUID.
     """
+    ddb_table_name = f"dss-auth-lookup-${os.environ['DSS_DEPLOYMENT_STAGE']}"
+
     def _assert_authorized_flac(self, **kwargs):
         """
         kwargs contains information from both the original API function
@@ -22,7 +29,22 @@ class FlacMixin(Authorize):
         # email = self.token_email
         # group = self.token_group
         # Do FLAC lookup here
-        return
+        self.assert_required_parameters(kwargs, ["uuid", "method"])
+        uuid = kwargs.get('uuid')
+
+        try:
+            flac_attributes = db.get_item(table=self.ddb_table_name, hash_key=uuid)
+        except db.DynamoDBItemNotFound as ex:
+            msg = f'uuid: {uuid} was not found in the flac table'
+            logger.info(msg, ex)
+            return
+        else:
+            if not self.assert_auth0authz_groups_intersects(flac_attributes['groups']):
+                msg = f'User: {self.token} does not have sufficient privileges for object: {flac_attributes}'
+                raise DSSForbiddenException(msg)
+            return
+        # TODO what about users? should the class be able to handle users and/or groups?
+
 
 class Auth0AuthZGroupsMixin(Authorize):
     """
@@ -115,6 +137,7 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     def _read(self, **kwargs):
         """Auth checks for 'read' API actions"""
         # Data is public if there is no FLAC table entry.
+        kwargs['auth0authz_groups'] = self.auth0authz_groups
         self._assert_authorized_flac(**kwargs)
         return
 
@@ -136,5 +159,5 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     @always_allow_admins
     def _delete(self, **kwargs):
         """Auth checks for 'delete' API actions"""
-        err = "Delete action is only allowed for admin users"
+        err = f"Delete action is only allowed for admin users, user: {self.token_email} is not permitted"
         raise DSSForbiddenException(err)
