@@ -137,7 +137,6 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     def _read(self, **kwargs):
         """Auth checks for 'read' API actions"""
         # Data is public if there is no FLAC table entry.
-        kwargs['auth0authz_groups'] = self.auth0authz_groups
         self._assert_authorized_flac(**kwargs)
         return
 
