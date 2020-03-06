@@ -13,6 +13,7 @@ import random
 import copy
 import datetime
 import tempfile
+import typing
 from collections import namedtuple
 from unittest import mock
 from boto3.s3.transfer import TransferConfig
@@ -1546,7 +1547,7 @@ class TestFlacTableOperations(unittest.TestCase):
             self.assertEqual(item['inDatabase'], False)
 
     def _build_response_obj(self, key: str, groups: list = None, ddb_status: bool = True):
-        temp = dict()
+        temp: typing.Dict[typing.Any, typing.Any] = dict()
         temp['key'] = key
         temp['uuid'] = UUID_REGEX.search(key).group(0)
         temp['inDatabase'] = ddb_status
