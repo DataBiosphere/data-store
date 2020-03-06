@@ -27,13 +27,14 @@ from tests import skip_on_travis
 from tests.infra import testmode
 from dss.operations import DSSOperationsCommandDispatch
 from dss.operations.util import map_bucket_results
-from dss.operations import checkout, storage, sync, secrets, lambda_params, iam, events
+from dss.operations import checkout, storage, sync, secrets, lambda_params, iam, events, flac
 from dss.operations.lambda_params import get_deployed_lambdas, fix_ssm_variable_prefix
 from dss.operations.iam import IAMSEPARATOR
 from dss.operations.secrets import SecretsChecker
 from dss.logging import configure_test_logging
 from dss.config import BucketConfig, Config, Replica, override_bucket_config
 from dss.storage.hcablobstore import FileMetadata, compose_blob_key
+from dss.storage.identifiers import UUID_REGEX
 from dss.util.version import datetime_to_version_format
 from tests import CaptureStdout, SwapStdin
 from tests.test_bundle import TestBundleApiMixin
@@ -1507,6 +1508,51 @@ class TestSecretsChecker(unittest.TestCase):
         s.email = ['nonsense']
         with self.assertRaises(ValueError):
             s.run()
+
+
+@testmode.integration
+class TestFlacTableOperations(unittest.TestCase):
+    file_keys = [f'files/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(4)]
+    bundle_keys = [f'bundles/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(1)]
+    all_keys = file_keys + bundle_keys
+    groups = ["testing", "operations"]
+
+    def test_flac_flow(self):
+        self._test_upload_keys()
+        self._test_modify_key()
+        self._test_remove_keys()
+        
+    def _test_upload_keys(self):
+        args = argparse.Namespace(keys=self.all_keys,
+                                  groups=self.groups)
+        resp = flac.Add([], args)
+        for item in resp:
+            self.assertDictEqual(item, self._build_response_obj(item['key'], self.groups))
+
+    def _test_modify_key(self):
+        mod_groups = ["modify"]
+        mod_key = self.all_keys[random.randint(0, len(self.all_keys))]
+        args = argparse.Namespace(keys=mod_key,
+                                  groups=mod_groups)
+        resp = flac.Add([], args)
+        for item in resp:
+            self.assertDictEqual(item, self._build_response_obj(mod_key, mod_groups))
+
+    def _test_remove_keys(self):
+        args = argparse.Namespace(keys=self.all_keys)
+        flac.Remove([], args)
+        resp = flac.Get([], args)
+        for item in resp:
+            self.assertEqual(item['inDatabase'], False)
+
+    def _build_response_obj(self, key: str, groups: list = None, ddb_status: bool = True):
+        temp = dict()
+        temp['key'] = key
+        temp['uuid'] = UUID_REGEX.search(key).group(0)
+        temp['inDatabase'] = ddb_status
+        if groups:
+            temp['groups'] = groups
+        return temp
 
 
 if __name__ == '__main__':
