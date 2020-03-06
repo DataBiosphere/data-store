@@ -478,7 +478,7 @@ class TestIndexerBase(ElasticsearchTestCase, DSSAssertMixin, DSSStorageMixin, DS
         # (how to get the deleting user?)
         # get_auth_header -> jwt_service_token -> various ways of populating email claim
         deleting_users = [
-            os.environ.get('DSS_GCP_SERVICE_ACCOUNT_NAME') + '@' + os.environ.get('DSS_AUTHORIZED_DOMAINS_TEST'),
+            Config.get_service_account_email(),
             UNAUTHORIZED_GCP_CREDENTIALS['client_email']
         ]
         with unittest.mock.patch("dss.Config.get_admin_user_emails", return_value=deleting_users):
