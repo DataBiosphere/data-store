@@ -16,7 +16,7 @@ class FlacMixin(Authorize):
     access control (FLAC) table to check if a user is allowed
     to access a given UUID.
     """
-    ddb_table_name = f"dss-auth-lookup-${os.environ['DSS_DEPLOYMENT_STAGE']}"
+    flac_lookup_table_name = f"dss-auth-lookup-${os.environ['DSS_DEPLOYMENT_STAGE']}"
 
     def _assert_authorized_flac(self, **kwargs):
         """
@@ -33,7 +33,7 @@ class FlacMixin(Authorize):
         uuid = kwargs.get('uuid')
 
         try:
-            flac_attributes = db.get_item(table=self.ddb_table_name, hash_key=uuid)
+            flac_attributes = db.get_item(table=self.flac_lookup_table_name, hash_key=uuid)
         except db.DynamoDBItemNotFound as ex:
             msg = f'uuid: {uuid} was not found in the flac table'
             logger.info(msg, ex)
