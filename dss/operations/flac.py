@@ -82,6 +82,7 @@ class Add(FlacHandler):
         print(json.dumps(key_status, indent=2))
         return key_status  # action_handler does not really use this, its just testing
 
+
 @flac.action("remove",
              arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)})
 class Remove(FlacHandler):

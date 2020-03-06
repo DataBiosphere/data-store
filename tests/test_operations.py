@@ -1513,6 +1513,9 @@ class TestSecretsChecker(unittest.TestCase):
 
 @testmode.integration
 class TestFlacTableOperations(unittest.TestCase):
+    """
+    Test the dynamodb table with flac operations, tests with actual deployed infra
+    """
     file_keys = [f'files/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(4)]
     bundle_keys = [f'bundles/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(1)]
     all_keys = file_keys + bundle_keys
@@ -1527,7 +1530,7 @@ class TestFlacTableOperations(unittest.TestCase):
     def _test_upload_keys(self):
         args = argparse.Namespace(keys=self.all_keys,
                                   groups=self.groups)
-        resp = flac.Add([], args)
+        resp = flac.Add([], args).process_keys()
         for item in resp:
             self.assertDictEqual(item, self._build_response_obj(item['key'], self.groups))
 
@@ -1536,20 +1539,20 @@ class TestFlacTableOperations(unittest.TestCase):
         mod_key = self.all_keys[random.randint(0, len(self.all_keys))]
         args = argparse.Namespace(keys=mod_key,
                                   groups=mod_groups)
-        resp = flac.Add([], args)
+        resp = flac.Add([], args).process_keys()
         for item in resp:
             self.assertDictEqual(item, self._build_response_obj(mod_key, mod_groups))
 
     def _test_remove_keys(self):
         args = argparse.Namespace(keys=self.all_keys)
         flac.Remove([], args)
-        resp = flac.Get([], args)
+        resp = flac.Get([], args).process_keys()
         for item in resp:
             self.assertEqual(item['inDatabase'], False)
 
     def _test_get_keys(self, keys: list, groups: list):
         args = argparse.Namespace(keys=keys)
-        resp = flac.Get([], args)
+        resp = flac.Get([], args).process_keys()
         for item in resp:
             self.assertDictEqual(item, self._build_response_obj(item['key'], groups))
 
