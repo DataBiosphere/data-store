@@ -31,6 +31,7 @@ class FlacHandler:
         raise NotImplementedError()
 
     def __call__(self, argv: typing.List[str], args: argparse.Namespace):
+        # TODO: ideally this would be a threaded operation to handle many keys
         self.process_keys()
 
 
