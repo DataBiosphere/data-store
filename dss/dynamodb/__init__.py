@@ -25,7 +25,12 @@ def _format_item(hash_key: str, sort_key: Optional[str], value: Optional[str], t
 def _format_ddb_response(ddb_response_object: dict) -> typing.Dict:
     formatted_object = {}
     for k, v in ddb_response_object.items():  # strips out ddb typing info
-        formatted_object[k] = [*v.values()][0]
+        if [*v.keys()][0] == 'L':
+            formatted_object[k] = []
+            for nested_dictionary in v['L']:
+                formatted_object[k].append([*nested_dictionary.values()][0])
+        else:
+            formatted_object[k] = [*v.values()][0]
     return formatted_object
 
 

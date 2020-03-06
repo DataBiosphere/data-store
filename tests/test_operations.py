@@ -1521,7 +1521,7 @@ class TestFlacTableOperations(unittest.TestCase):
         self._test_upload_keys()
         self._test_modify_key()
         self._test_remove_keys()
-        
+
     def _test_upload_keys(self):
         args = argparse.Namespace(keys=self.all_keys,
                                   groups=self.groups)
