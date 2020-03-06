@@ -116,6 +116,7 @@ class Config:
     _CURRENT_CONFIG: BucketConfig = BucketConfig.ILLEGAL
     _NOTIFICATION_SENDER_EMAIL: typing.Optional[str] = None
     _ADMIN_USER_EMAILS_LIST: typing.Optional[typing.List[str]] = None
+    _SERVICE_ACCT_EMAIL: typing.Optional[str] = None
     _TRUSTED_GOOGLE_PROJECTS: typing.Optional[typing.List[str]] = None
     _OIDC_AUTH0_TOKEN_CLAIM: typing.Optional[str] = None
     _OIDC_AUDIENCE: typing.Optional[typing.List[str]] = None
@@ -459,6 +460,14 @@ class Config:
         if Config._AUTH_BACKEND is None:
             Config._AUTH_BACKEND = Config._get_required_envvar("AUTH_BACKEND")
         return Config._AUTH_BACKEND
+
+    @staticmethod
+    def get_service_account_email():
+        if Config._SERVICE_ACCT_EMAIL is None:
+            ename = Config._get_required_envvar('DSS_GCP_SERVICE_ACCOUNT_NAME')
+            edomain = Config._get_required_envvar('DSS_AUTHORIZED_DOMAINS_TEST')
+            Config._SERVICE_ACCT_EMAIL = f"{ename}@{edomain}"
+        return Config._SERVICE_ACCT_EMAIL
 
     @staticmethod
     def get_ServiceAccountManager() -> security.DCPServiceAccountManager:

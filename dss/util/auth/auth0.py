@@ -68,10 +68,10 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     create/read/update/delete operations.
 
     Decorator examples:
-    @security.assert_authorize(method='create', groups=['dbio', 'grp'])
-    @security.assert_authorize(method='read')
-    @security.assert_authorize(method='update', groups=['dbio', 'grp'])
-    @security.assert_authorize(method='delete')
+    @security.assert_security(method='create', groups=['dbio', 'grp'])
+    @security.assert_security(method='read')
+    @security.assert_security(method='update', groups=['dbio', 'grp'])
+    @security.assert_security(method='delete')
     """
     def __init__(self):
         self.session = requests.Session()
