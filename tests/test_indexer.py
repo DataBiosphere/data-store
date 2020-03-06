@@ -51,7 +51,9 @@ from dss.storage.identifiers import BundleFQID, ObjectIdentifier
 from dss.util import UrlBuilder, networking, RequirementError
 from dss.util.version import datetime_to_version_format
 from dss.util.time import SpecificRemainingTime
-from tests import eventually, get_auth_header, get_bundle_fqid, get_file_fqid, get_version
+from tests import (
+    eventually, get_auth_header, get_bundle_fqid, get_file_fqid, get_version, UNAUTHORIZED_GCP_CREDENTIALS
+)
 from tests.infra import DSSAssertMixin, DSSStorageMixin, DSSUploadMixin, TestBundle, testmode
 from tests.infra.elasticsearch_test_case import ElasticsearchTestCase
 from tests.infra.server import ThreadedLocalServer, MockFusilladeHandler
@@ -472,13 +474,16 @@ class TestIndexerBase(ElasticsearchTestCase, DSSAssertMixin, DSSStorageMixin, DS
                   .add_query("replica", self.replica.name)
                   .add_query("subscription_type", "elasticsearch"))
 
-        # # TODO @chmreid
-        # # This is where we want to do a mock patch
-        # # (how to get the deleting user?)
-        # # get_auth_headers -> jwt_service_token -> various ways of populating email claim
-        # with unittest.mock.patch("dss.Config.get_admin_user_emails", return_value=[deleting_user]):
-        # # This API endpoint will check if the user is an admin, hence the patch above
-        self.assertDeleteResponse(url, requests.codes.ok, headers=get_auth_header(authorized=True))
+        # This is where we want to do a mock patch
+        # (how to get the deleting user?)
+        # get_auth_header -> jwt_service_token -> various ways of populating email claim
+        deleting_users = [
+            os.environ.get('DSS_GCP_SERVICE_ACCOUNT_NAME') + '@' + os.environ.get('DSS_AUTHORIZED_DOMAINS_TEST'),
+            UNAUTHORIZED_GCP_CREDENTIALS['client_email']
+        ]
+        with unittest.mock.patch("dss.Config.get_admin_user_emails", return_value=deleting_users):
+            # This API endpoint will check if the user is an admin, hence the patch above
+            self.assertDeleteResponse(url, requests.codes.ok, headers=get_auth_header())
 
     @testmode.always
     def test_subscription_notification_successful(self):
