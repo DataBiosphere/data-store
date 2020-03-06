@@ -1520,6 +1520,7 @@ class TestFlacTableOperations(unittest.TestCase):
 
     def test_flac_flow(self):
         self._test_upload_keys()
+        self._test_get_keys(self.all_keys, self.groups)
         self._test_modify_key()
         self._test_remove_keys()
 
@@ -1545,6 +1546,12 @@ class TestFlacTableOperations(unittest.TestCase):
         resp = flac.Get([], args)
         for item in resp:
             self.assertEqual(item['inDatabase'], False)
+
+    def _test_get_keys(self, keys: list, groups: list):
+        args = argparse.Namespace(keys=keys)
+        resp = flac.Get([], args)
+        for item in resp:
+            self.assertDictEqual(item, self._build_response_obj(item['key'], groups))
 
     def _build_response_obj(self, key: str, groups: list = None, ddb_status: bool = True):
         temp: typing.Dict[typing.Any, typing.Any] = dict()
