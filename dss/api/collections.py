@@ -156,8 +156,8 @@ def _dedpuplicate_contents(contents: List) -> List:
     return list(dedup_collection.values())
 
 
+# No security decorator needed - endpoint already checks that deletion request came from subsc owner
 @dss_handler
-@security.assert_security(method='delete', groups=['dbio'])
 def delete(uuid: str, replica: str):
     authenticated_user_email = security.get_token_email(request.token_info)
 
