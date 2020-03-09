@@ -153,7 +153,6 @@ def put(json_request_body: dict, replica: str):
     return jsonify(dict(uuid=uuid)), requests.codes.created
 
 
-@security.assert_security(method='delete', groups=['dbio', 'public'])
 def delete(uuid: str, replica: str):
     owner = security.get_token_email(request.token_info)
 

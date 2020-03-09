@@ -83,7 +83,6 @@ def put(json_request_body: dict, replica: str):
     return subscription_doc, requests.codes.created
 
 
-@security.assert_security(method='delete', groups=['dbio', 'public'])
 def delete(uuid: str, replica: str):
     owner = security.get_token_email(request.token_info)
     subscription = get_subscription(Replica[replica], owner, uuid)
