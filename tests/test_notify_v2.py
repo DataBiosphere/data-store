@@ -19,13 +19,14 @@ import importlib
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from dss import Config
 from dss.util import UrlBuilder
 from dss.events.handlers import notify_v2
 from dss.storage.identifiers import TOMBSTONE_SUFFIX
 from tests.infra import DSSAssertMixin, DSSUploadMixin, get_env, testmode
 from dss.config import Replica
 from tests.infra.server import ThreadedLocalServer, SilentHandler
-from tests import eventually, get_auth_header
+from tests import eventually, get_auth_header, UNAUTHORIZED_GCP_CREDENTIALS
 from dcplib.aws.sqs import SQSMessenger, get_queue_url
 from dss.events.handlers.notify_v2 import notify_or_queue
 from dss.util.version import datetime_to_version_format
@@ -649,11 +650,17 @@ class TestNotifyV2(unittest.TestCase, DSSAssertMixin, DSSUploadMixin):
         url = str(UrlBuilder()
                   .set(path=f"/v1/subscriptions/{uuid}")
                   .add_query("replica", replica.name))
-        if use_auth:
-            resp = self.assertDeleteResponse(url, codes, headers=get_auth_header())
-        else:
-            resp = self.assertDeleteResponse(url, codes)
-        return json.loads(resp.body)
+        # This endpoint checks if the user performing the deletion is an admin
+        deleting_users = [
+            Config.get_service_account_email(),
+            UNAUTHORIZED_GCP_CREDENTIALS['client_email']
+        ]
+        with unittest.mock.patch("dss.Config.get_admin_user_emails", return_value=deleting_users):
+            if use_auth:
+                resp = self.assertDeleteResponse(url, codes, headers=get_auth_header())
+            else:
+                resp = self.assertDeleteResponse(url, codes)
+            return json.loads(resp.body)
 
     def _shared_bundle_once(self, replica: Replica):
         """
