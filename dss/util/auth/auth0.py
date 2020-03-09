@@ -136,5 +136,5 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     @always_allow_admins
     def _delete(self, **kwargs):
         """Auth checks for 'delete' API actions"""
-        err = "Delete action is only allowed for admin users"
+        err = f"Delete action not allowed for user {self.token_email}, not in {self.admin_emails}"
         raise DSSForbiddenException(err)
