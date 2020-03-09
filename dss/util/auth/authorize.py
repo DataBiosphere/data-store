@@ -46,9 +46,8 @@ class AuthorizeBase(metaclass=AuthRegistry):
         """
         for param in required_params:
             if param not in provided_params:
-                title = "Missing Security Paramters"
-                err = f'Missing parameters within {provided_params.keys()}, unable to locate {param},'
-                raise DSSException(500, title, err)
+                err = f'Authorization token is missing claim {param} from claims: {provided_params.keys()}'
+                raise DSSException(401, 'Unauthorized', err)
         return
 
 
