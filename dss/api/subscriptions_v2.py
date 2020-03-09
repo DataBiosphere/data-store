@@ -83,6 +83,7 @@ def put(json_request_body: dict, replica: str):
     return subscription_doc, requests.codes.created
 
 
+# No security decorator needed - endpoint already checks that deletion request came from subsc owner
 def delete(uuid: str, replica: str):
     owner = security.get_token_email(request.token_info)
     subscription = get_subscription(Replica[replica], owner, uuid)
