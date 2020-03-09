@@ -73,7 +73,6 @@ class TokenMixin(AuthorizeBase):
         try:
             self.assert_required_parameters(self.token, required_params)
         except DSSException:
-            title = "Unauthorized"
             err = f'Authorization token is missing claims {required_params} from claims: {self.token.keys()}'
             raise DSSException(401, 'Unauthorized', err)
         return
