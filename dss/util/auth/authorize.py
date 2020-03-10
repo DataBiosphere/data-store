@@ -47,7 +47,7 @@ class AuthorizeBase(metaclass=AuthRegistry):
         for param in required_params:
             if param not in provided_params:
                 title = "Missing Security Paramters"
-                err = f'Missing parameters within {provided_params.keys()}, unable to locate {param},'
+                err = f'Missing parameters within {provided_params.keys()}, unable to locate {param}'
                 raise DSSException(500, title, err)
         return
 
@@ -69,6 +69,13 @@ class TokenMixin(AuthorizeBase):
         assert_authorized_issuer(self.token)
         return
 
+    def _assert_required_token_parameters(self, required_params: list):
+        try:
+            self.assert_required_parameters(self.token, required_params)
+        except DSSException:
+            err = f'Authorization token is missing claims {required_params} from claims: {self.token.keys()}'
+            raise DSSException(401, 'Unauthorized', err)
+        return
 
 class TokenGroupMixin(TokenMixin):
     """
@@ -80,7 +87,7 @@ class TokenGroupMixin(TokenMixin):
     def token_group(self):
         """Property for the user's JWT group claim"""
         group_claim = Config.get_OIDC_group_claim()
-        self.assert_required_parameters(self.token, [group_claim])
+        self._assert_required_token_parameters([group_claim])
         return self.token[group_claim]
 
     def _assert_authorized_group(self, groups):
@@ -100,7 +107,7 @@ class TokenEmailMixin(TokenMixin):
     def token_email(self):
         """Property for the user's JWT email claim"""
         email_claim = Config.get_OIDC_email_claim()
-        self.assert_required_parameters(self.token, [email_claim])
+        self._assert_required_token_parameters([email_claim])
         return self.token[email_claim]
 
     def _assert_authorized_email(self, emails):

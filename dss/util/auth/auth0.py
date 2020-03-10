@@ -43,7 +43,7 @@ class Auth0AuthZGroupsMixin(Authorize):
         """Property for the groups added to the JWT by the Auth0 AuthZ plugin"""
         # First get the portion of the token added by the Auth0 AuthZ extension
         auth0authz_claim = self.get_auth0authz_claim()
-        self.assert_required_parameters(self.token, [auth0authz_claim])
+        self._assert_required_token_parameters([auth0authz_claim])
         auth0authz_token = self.token[auth0authz_claim]
 
         # Second extract the groups from this portion
