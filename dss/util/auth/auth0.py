@@ -40,7 +40,7 @@ class FlacMixin(Authorize):
             return
         else:
             try:
-                assert_auth0authz_groups_intersects(flac_attributes['groups'])
+                self.assert_auth0authz_groups_intersects(flac_attributes['groups'])
             except DSSForbiddenException:
                 # Re-raise the exception with better context
                 msg = f'User: {self.token} does not have sufficient privileges for object: {flac_attributes}'
