@@ -16,7 +16,7 @@ class FlacMixin(Authorize):
     access control (FLAC) table to check if a user is allowed
     to access a given UUID.
     """
-    flac_lookup_table_name = f"dss-auth-lookup-${os.environ['DSS_DEPLOYMENT_STAGE']}"
+    flac_lookup_table_name = f"dss-auth-lookup-{os.environ['DSS_DEPLOYMENT_STAGE']}"
 
     def _assert_authorized_flac(self, **kwargs):
         """
