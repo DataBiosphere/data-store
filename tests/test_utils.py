@@ -263,14 +263,14 @@ class TestDynamodbUtils(unittest.TestCase):
                                      "hash_key": "travis-test@platform-hca.iam.gserviceaccount.com",
                                      "body": "owner",
                                      "string_set": ["GMAW", "FCAW", "GTAW"],
-                                     "list": [{"S": "Cookies"}, {"S": "Coffee"}, {"N", "3.14159"}]}
+                                     "list": ['Cookies', 'Coffee', '3.14159']}
 
         def mock_ddb_call():
             return {"Item": {"sort_key": {"S": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z"},
                              "hash_key": {"S": "travis-test@platform-hca.iam.gserviceaccount.com"},
                              "body": {"S": "owner"},
                              "string_set": {"SS": ["GMAW", "FCAW", "GTAW"]},
-                             "list": {"L": [{"S": "Cookies"}, {"S": "Coffee"}, {"N", "3.14159"}]}}}
+                             "list": {"L": [{"S": "Cookies"}, {"S": "Coffee"}, {"N": "3.14159"}]}}}
 
         with mock.patch('dss.dynamodb.db.get_item') as mock_get_item:
             mock_get_item.return_value = mock_ddb_call()
