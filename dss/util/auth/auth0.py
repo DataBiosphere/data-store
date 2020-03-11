@@ -39,10 +39,14 @@ class FlacMixin(Authorize):
             logger.info(msg, ex)
             return
         else:
-            if not self.assert_auth0authz_groups_intersects(flac_attributes['groups']):
+            try:
+                self.assert_auth0authz_groups_intersects(flac_attributes['groups'])
+            except DSSForbiddenException:
+                # Re-raise the exception with better context
                 msg = f'User: {self.token} does not have sufficient privileges for object: {flac_attributes}'
                 raise DSSForbiddenException(msg)
-            return
+            else:
+                return
         # TODO what about users? should the class be able to handle users and/or groups?
 
 
@@ -80,7 +84,10 @@ class Auth0AuthZGroupsMixin(Authorize):
         has cardinality greater than zero (intersection has at least 1 member).
         """
         cardinality = len(set(self.auth0authz_groups).intersection(set(groups)))
-        return cardinality > 0
+        if cardinality > 0:
+            return
+        else:
+            raise DSSForbiddenException()
 
 
 class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
