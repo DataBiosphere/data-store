@@ -225,7 +225,7 @@ class TestAuth0Auth(unittest.TestCase):
                 auth.security_flow(method='group', groups=[allowed_grp])  # type: ignore
                 with mock.patch('dss.util.auth.auth0.FlacMixin._assert_authorized_flac', return_value=True):
                     auth.security_flow(method='read')  # type: ignore
-                auth.security_flow(method='update', groups=[allowed_grp])  # type: ignore
+                    auth.security_flow(method='update', groups=[allowed_grp])  # type: ignore
                 if admin:
                     auth.security_flow(method='delete')  # type: ignore
                 else:
