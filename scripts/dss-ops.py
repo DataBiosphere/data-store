@@ -18,6 +18,7 @@ import dss.operations.lambda_params
 import dss.operations.elasticsearch
 import dss.operations.events
 import dss.operations.secrets
+import dss.operations.flac
 
 from dss.operations import dispatch
 
