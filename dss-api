@@ -14,7 +14,7 @@ from chalice.cli import CLIFactory, run_local_server
 import dss
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--host", default="")
+parser.add_argument("--host", default="localhost")
 parser.add_argument("--port", type=int, default=5000)
 parser.add_argument("--no-debug", dest="debug", action="store_false",
                     help="Disable Chalice/Connexion/Flask debug mode")
