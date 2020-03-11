@@ -49,7 +49,7 @@ def get_impl(uuid: str, replica: str, version: str = None):
 
 
 @dss_handler
-@security.assert_security(method='read', groups=['dbio'])
+@security.assert_security(method='group', groups=['dbio'])
 def list_collections(per_page: int, start_at: int = 0):
     """
     Return a list of a user's collections.
