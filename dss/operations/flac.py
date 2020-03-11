@@ -31,6 +31,7 @@ class FlacHandler:
         raise NotImplementedError()
 
     def __call__(self, argv: typing.List[str], args: argparse.Namespace):
+        # TODO: ideally this would be a threaded operation to handle many keys
         self.process_keys()
 
 
@@ -48,10 +49,13 @@ class Get(FlacHandler):
             try:
                 flac_attributes = ddb.get_item(table=self.flac_lookup_table_name, hash_key=uuid)
             except ddb.DynamoDBItemNotFound:
+                temp_status['inDatabase'] = False
                 # nothing was found within the database
                 pass
             else:
                 temp_status.update(flac_attributes)
+                temp_status['inDatabase'] = True
+                temp_status['uuid'] = temp_status.pop('hash_key')
             key_status.append(temp_status)
         print(json.dumps(key_status, indent=2))
         return key_status  # action_handler does not really use this, its just testing
@@ -75,6 +79,17 @@ class Add(FlacHandler):
                                                  update_expression=update_expression,
                                                  expression_attribute_values=expression_attribute_values)
             updated_attributes['key'] = _key
+            updated_attributes['uuid'] = updated_attributes.pop('hash_key')
+            updated_attributes['inDatabase'] = True
             key_status.append(updated_attributes)
         print(json.dumps(key_status, indent=2))
         return key_status  # action_handler does not really use this, its just testing
+
+
+@flac.action("remove",
+             arguments={"--keys": dict(nargs="+", help="Keys to inspect in DynamoDB", required=True)})
+class Remove(FlacHandler):
+    def process_keys(self):
+        for _key in self.keys:
+            uuid, version = self._parse_key(_key)
+            ddb.delete_item(table=self.flac_lookup_table_name, hash_key=uuid)
