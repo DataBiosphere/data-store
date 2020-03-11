@@ -104,7 +104,8 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
     """
     def __init__(self):
         self.session = requests.Session()
-        self.valid_methods = {'create': self._create,
+        self.valid_methods = {'group': self._group,
+                              'create': self._create,
                               'read': self._read,
                               'update': self._update,
                               'delete': self._delete}
@@ -131,6 +132,15 @@ class Auth0(FlacMixin, Auth0AuthZGroupsMixin):
         # Dispatch to correct method
         executed_method = self.valid_methods[method]
         executed_method(**kwargs)
+
+    @always_allow_admins
+    def _group(self, **kwargs):
+        """Auth checks for 'group' API actions"""
+        # This just checks that the JWT group is in the
+        # list of allowed groups specified in the decorator
+        self.assert_required_parameters(kwargs, ['groups'])
+        self._assert_authorized_group(kwargs['groups'])
+        return
 
     @always_allow_admins
     def _create(self, **kwargs):
