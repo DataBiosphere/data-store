@@ -55,6 +55,7 @@ class Get(FlacHandler):
             else:
                 temp_status.update(flac_attributes)
                 temp_status['inDatabase'] = True
+                temp_status['uuid'] = temp_status.pop('hash_key')
             key_status.append(temp_status)
         print(json.dumps(key_status, indent=2))
         return key_status  # action_handler does not really use this, its just testing
@@ -78,6 +79,8 @@ class Add(FlacHandler):
                                                  update_expression=update_expression,
                                                  expression_attribute_values=expression_attribute_values)
             updated_attributes['key'] = _key
+            updated_attributes['uuid'] = updated_attributes.pop('hash_key')
+            updated_attributes['inDatabase'] = True
             key_status.append(updated_attributes)
         print(json.dumps(key_status, indent=2))
         return key_status  # action_handler does not really use this, its just testing

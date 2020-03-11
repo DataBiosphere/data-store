@@ -1519,7 +1519,7 @@ class TestFlacTableOperations(unittest.TestCase):
     file_keys = [f'files/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(4)]
     bundle_keys = [f'bundles/{uuid.uuid4()}.{datetime_to_version_format(datetime.datetime.now())}' for x in range(1)]
     all_keys = file_keys + bundle_keys
-    groups = ["testing", "operations"]
+    groups = ["operations", "testing"]
 
     def test_flac_flow(self):
         self._test_upload_keys()
@@ -1532,20 +1532,20 @@ class TestFlacTableOperations(unittest.TestCase):
                                   groups=self.groups)
         resp = flac.Add([], args).process_keys()
         for item in resp:
-            self.assertDictEqual(item, self._build_response_obj(item['key'], self.groups))
+            self._assert_obj(item, self._build_response_obj(item['key'], self.groups))
 
     def _test_modify_key(self):
         mod_groups = ["modify"]
-        mod_key = self.all_keys[random.randint(0, len(self.all_keys))]
+        mod_key = [self.all_keys[random.randint(0, len(self.all_keys) - 1)]]
         args = argparse.Namespace(keys=mod_key,
                                   groups=mod_groups)
         resp = flac.Add([], args).process_keys()
         for item in resp:
-            self.assertDictEqual(item, self._build_response_obj(mod_key, mod_groups))
+            self._assert_obj(item, self._build_response_obj(mod_key[0], mod_groups))
 
     def _test_remove_keys(self):
         args = argparse.Namespace(keys=self.all_keys)
-        flac.Remove([], args)
+        flac.Remove([], args).process_keys()
         resp = flac.Get([], args).process_keys()
         for item in resp:
             self.assertEqual(item['inDatabase'], False)
@@ -1554,7 +1554,22 @@ class TestFlacTableOperations(unittest.TestCase):
         args = argparse.Namespace(keys=keys)
         resp = flac.Get([], args).process_keys()
         for item in resp:
-            self.assertDictEqual(item, self._build_response_obj(item['key'], groups))
+            self._assert_obj(item, self._build_response_obj(item['key'], groups))
+
+    def _assert_obj(self, first: dict, second: dict):
+        """
+        Asserts that two dictionaries are equal, ensures that data types are checked correctly.
+        :param first:
+        :param second:
+        """
+        for k, v in first.items():
+            self.assertIn(k, second)
+            if type(v) is list:
+                self.assertListEqual(sorted(v), sorted(second[k]))
+            elif type(v) is dict:
+                self.assertDictEqual(v, second[k])
+            else:
+                self.assertEqual(v, second[k])
 
     def _build_response_obj(self, key: str, groups: list = None, ddb_status: bool = True):
         temp: typing.Dict[typing.Any, typing.Any] = dict()
