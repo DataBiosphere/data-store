@@ -6,12 +6,14 @@ import sys
 import unittest
 from unittest import mock
 
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 import dss
 from dss import DSSException, DSSForbiddenException, Config
 from dss.config import Replica
+from dss.dynamodb import get_item
 from dss.logging import configure_test_logging
 from dss.util import UrlBuilder, security, multipart_parallel_upload
 from dss.util.aws import ARN
@@ -97,6 +99,7 @@ class TestUrlBuilder(unittest.TestCase):
 
 @testmode.standalone
 class TestSecurity(unittest.TestCase):
+    """Test the security utility methods found in dss.util.security"""
 
     @classmethod
     def setUpClass(cls):
@@ -123,12 +126,12 @@ class TestSecurity(unittest.TestCase):
                     security.assert_authorized_issuer(issuer)
 
     def test_authorizated_group(self):
-        valid_token_infos = [{os.environ['OIDC_GROUP_CLAIM']: 'hca'},
+        valid_token_infos = [{os.environ['OIDC_GROUP_CLAIM']: 'dbio'},
                              {os.environ['OIDC_GROUP_CLAIM']: 'public'}
                              ]
         for token_info in valid_token_infos:
             with self.subTest(token_info):
-                security.assert_authorized_group(['hca', 'public'], token_info)
+                security.assert_authorized_group(['dbio', 'public'], token_info)
 
     def test_not_authorizated_group(self):
         invalid_token_info = [{'sub': "travis-test@human-cell-atlas-travis-test.gmail.com"},
@@ -140,17 +143,17 @@ class TestSecurity(unittest.TestCase):
         for token_info in invalid_token_info:
             with self.subTest(token_info):
                 with self.assertRaises(DSSForbiddenException):
-                    security.assert_authorized_group(['hca'], token_info)
+                    security.assert_authorized_group(['dbio'], token_info)
 
-    @mock.patch('dss.Config._OIDC_AUDIENCE', new=["https://dev.data.humancellatlas.org/",
-                                                  "https://data.humancellatlas.org/"])
+    @mock.patch('dss.Config._OIDC_AUDIENCE', new=["https://dev.ucsc-cgp-redwood.org/",
+                                                  "https://data.ucsc-cgp-redwood.org/"])
     @mock.patch('dss.Config._TRUSTED_GOOGLE_PROJECTS', new=['cool-project-188401.iam.gserviceaccount.com'])
     def test_verify_jwt_multiple_audience(self):
         jwts_positive = [
             get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS),
-            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://dev.data.humancellatlas.org/"),
-            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://data.humancellatlas.org/"),
-            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience=["https://dev.data.humancellatlas.org/", "e"])
+            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://dev.ucsc-cgp-redwood.org/"),
+            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://data.ucsc-cgp-redwood.org/"),
+            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience=["https://dev.ucsc-cgp-redwood.org/", "e"])
         ]
         jwt_negative = [
             get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="something else"),
@@ -163,13 +166,13 @@ class TestSecurity(unittest.TestCase):
             with self.subTest("Negative: " + jwt):
                 self.assertRaises(dss.error.DSSException, security.verify_jwt, jwt)
 
-    @mock.patch('dss.Config._OIDC_AUDIENCE', new="https://dev.data.humancellatlas.org/")
+    @mock.patch('dss.Config._OIDC_AUDIENCE', new="https://dev.ucsc-cgp-redwood.org/")
     @mock.patch('dss.Config._TRUSTED_GOOGLE_PROJECTS', new=['cool-project-188401.iam.gserviceaccount.com'])
     def test_verify_jwt_single_audience(self):
         jwts_positive = [
             get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS),
-            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://dev.data.humancellatlas.org/"),
-            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience=["https://dev.data.humancellatlas.org/", "e"])
+            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="https://dev.ucsc-cgp-redwood.org/"),
+            get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience=["https://dev.ucsc-cgp-redwood.org/", "e"])
         ]
         jwt_negative = [
             get_service_jwt(UNAUTHORIZED_GCP_CREDENTIALS, audience="something else"),
@@ -245,6 +248,37 @@ class TestSecurity(unittest.TestCase):
     @staticmethod
     def restore_email_claims(old):
         os.environ['OIDC_EMAIL_CLAIM'] = old
+
+
+@testmode.standalone
+class TestDynamodbUtils(unittest.TestCase):
+
+    def test_get_item(self):
+        """
+        Test out functionality of removing the attribute types from a dynamodb response.
+        Example: {"foo": {"S": "bar"}} should become {"foo": "bar"}
+        """
+
+        formatted_item_attributes = {"sort_key": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z",
+                                     "hash_key": "travis-test@platform-hca.iam.gserviceaccount.com",
+                                     "body": "owner",
+                                     "string_set": ["GMAW", "FCAW", "GTAW"],
+                                     "list": ['Cookies', 'Coffee', '3.14159']}
+
+        def mock_ddb_call():
+            return {"Item": {"sort_key": {"S": "02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z"},
+                             "hash_key": {"S": "travis-test@platform-hca.iam.gserviceaccount.com"},
+                             "body": {"S": "owner"},
+                             "string_set": {"SS": ["GMAW", "FCAW", "GTAW"]},
+                             "list": {"L": [{"S": "Cookies"}, {"S": "Coffee"}, {"N": "3.14159"}]}}}
+
+        with mock.patch('dss.dynamodb.db.get_item') as mock_get_item:
+            mock_get_item.return_value = mock_ddb_call()
+            data = get_item(table='mock_table', hash_key="travis-test@platform-hca.iam.gserviceaccount.com",
+                            sort_key="02434574-dbec-45dd-8bc5-d5dae7007780.2020-02-24T201715.601067Z")
+
+        self.assertDictEqual(data, formatted_item_attributes)
+
 
 if __name__ == '__main__':
     unittest.main()

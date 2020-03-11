@@ -49,7 +49,7 @@ def get_impl(uuid: str, replica: str, version: str = None):
 
 
 @dss_handler
-@security.authorized_group_required(['hca'])
+@security.assert_security(method='read', groups=['dbio'])
 def list_collections(per_page: int, start_at: int = 0):
     """
     Return a list of a user's collections.
@@ -87,7 +87,7 @@ def list_collections(per_page: int, start_at: int = 0):
 
 
 @dss_handler
-@security.authorized_group_required(['hca'])
+@security.assert_security(method='read', groups=['dbio'])
 def get(uuid: str, replica: str, version: str = None):
     authenticated_user_email = security.get_token_email(request.token_info)
     collection_body = get_impl(uuid=uuid, replica=replica, version=version)
@@ -97,7 +97,7 @@ def get(uuid: str, replica: str, version: str = None):
 
 
 @dss_handler
-@security.authorized_group_required(['hca'])
+@security.assert_security(method='create', groups=['dbio'])
 def put(json_request_body: dict, replica: str, uuid: str, version: str):
     authenticated_user_email = security.get_token_email(request.token_info)
     collection_body = dict(json_request_body, owner=authenticated_user_email)
@@ -118,7 +118,7 @@ def put(json_request_body: dict, replica: str, uuid: str, version: str):
 
 
 @dss_handler
-@security.authorized_group_required(['hca'])
+@security.assert_security(method='update', groups=['dbio'])
 def patch(uuid: str, json_request_body: dict, replica: str, version: str):
     authenticated_user_email = security.get_token_email(request.token_info)
 
@@ -156,8 +156,8 @@ def _dedpuplicate_contents(contents: List) -> List:
     return list(dedup_collection.values())
 
 
+# No security decorator needed - endpoint already checks that deletion request came from subsc owner
 @dss_handler
-@security.authorized_group_required(['hca'])
 def delete(uuid: str, replica: str):
     authenticated_user_email = security.get_token_email(request.token_info)
 

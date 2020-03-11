@@ -15,6 +15,7 @@ export DSS_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 EXPORT_ENV_VARS_TO_LAMBDA_ARRAY=(
     API_DOMAIN_NAME
     AUTH_URL
+    AUTH_BACKEND
     CHECKOUT_CACHE_CRITERIA
     DSS_AUTHORIZED_DOMAINS
     DSS_AWS_FLASHFLOOD_PREFIX_READ
@@ -38,11 +39,12 @@ EXPORT_ENV_VARS_TO_LAMBDA_ARRAY=(
     DSS_S3_CHECKOUT_BUCKET
     DSS_VERSION
     DSS_XRAY_TRACE
-    GCP_PROJECT_NAME
+    GCP_PROJECT_ID
     GCP_DEFAULT_REGION
     OIDC_AUDIENCE
     OIDC_EMAIL_CLAIM
     OIDC_GROUP_CLAIM
+    OIDC_AUTH0_TOKEN_CLAIM
     OPENID_PROVIDER
     TOKENINFO_FUNC
 )
@@ -54,10 +56,11 @@ DSS_DEPLOYMENT_STAGE="dev"
 DSS_PLATFORM="ucsc-cgp"
 
 ADMIN_USER_EMAILS_SECRETS_NAME=admin_user_emails
+ADMIN_USER_EMAILS="" # Comma Separated Values
 AWS_DEFAULT_OUTPUT=json
 AWS_DEFAULT_REGION=us-east-1
 GCP_DEFAULT_REGION=us-central1
-GCP_PROJECT_NAME="platform-sc"
+GCP_PROJECT_ID="platform-hca"
 DSS_EVENT_RELAY_NAME=dss-gs-event-relay-
 CHECKOUT_CACHE_CRITERIA='[{"type":"application/json","max_size":12314}]'
 
@@ -101,11 +104,14 @@ API_DOMAIN_NAME="dss.${DSS_DEPLOYMENT_STAGE}.ucsc-cgp-redwood.org"
 TOKENINFO_FUNC=dss.util.security.verify_jwt
 # TODO remove https://dev.data.humancellatlas.org/ from OIDC_AUDIENCE once seperate deployments are made
 
-OIDC_AUDIENCE=https://dss.dev.ucsc-cgp-redwood.org/
-AUTH_URL=https://auth.ucsc.ucsc-cgp-redwood.org
+# Warning back slashes are sensitive here
+OIDC_AUDIENCE=https://dev.ucsc-cgp-redwood.org/
+AUTH_URL=https://dev-4lyab62k.auth0.com
 OPENID_PROVIDER=https://dev-4lyab62k.auth0.com/
-OIDC_EMAIL_CLAIM="${AUTH_URL}/email"
-OIDC_GROUP_CLAIM="${AUTH_URL}/group"
+OIDC_EMAIL_CLAIM="${OIDC_AUDIENCE}email"
+OIDC_GROUP_CLAIM="${OIDC_AUDIENCE}group"
+OIDC_AUTH0_TOKEN_CLAIM="${OIDC_AUDIENCE}auth0"
+AUTH_BACKEND=Auth0
 
 NOTIFY_URL=https://${API_DOMAIN_NAME}/internal/notify
 DSS_AUTHORIZED_GOOGLE_PROJECT_DOMAIN_ARRAY=(

@@ -61,9 +61,10 @@ class SecretsChecker(object):
         self.email = [f'{self.service_account}@platform-hca.iam.gserviceaccount.com']
         self.project = ['platform-hca']
         self.type = ['service_account']
-        self.auth_uri = ['https://auth.ucsc.ucsc-cgp-redwood.org/oauth/authorize',
+        self.auth_url = os.environ.get("AUTH_URL")
+        self.auth_uri = [f'{self.auth_url}/authorize',
                          'https://auth.dev.ucsc.ucsc-cgp-redwood.org/oauth/authorize']
-        self.token_uri = ['https://auth.ucsc.ucsc-cgp-redwood.org/oauth/token',
+        self.token_uri = [f'{self.auth_url}/oauth/token',
                           'https://auth.dev.ucsc.ucsc-cgp-redwood.org/oauth/token']
 
         self.app_secret_name = os.environ['GOOGLE_APPLICATION_SECRETS_SECRETS_NAME']

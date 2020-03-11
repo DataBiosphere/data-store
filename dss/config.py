@@ -115,9 +115,13 @@ class Config:
     _ALLOWED_GOOGLE_PROJECTS: typing.Optional[str] = None
     _CURRENT_CONFIG: BucketConfig = BucketConfig.ILLEGAL
     _NOTIFICATION_SENDER_EMAIL: typing.Optional[str] = None
+    _ADMIN_USER_EMAILS_LIST: typing.Optional[typing.List[str]] = None
+    _SERVICE_ACCT_EMAIL: typing.Optional[str] = None
     _TRUSTED_GOOGLE_PROJECTS: typing.Optional[typing.List[str]] = None
+    _OIDC_AUTH0_TOKEN_CLAIM: typing.Optional[str] = None
     _OIDC_AUDIENCE: typing.Optional[typing.List[str]] = None
     _AUTH_URL: typing.Optional[str] = None
+    _AUTH_BACKEND: typing.Optional[str] = None
     _SAM: security.DCPServiceAccountManager = None
 
     test_index_suffix = IndexSuffix()
@@ -379,13 +383,29 @@ class Config:
 
     @staticmethod
     def get_notification_email() -> str:
-        envvar = "DSS_NOTIFICATION_SENDER"
-        if envvar not in os.environ:
-            raise Exception(
-                "Please set the {} environment variable".format(envvar))
-        Config._NOTIFICATION_SENDER_EMAIL = os.environ[envvar]
-
+        val = Config._get_required_envvar("DSS_NOTIFICATION_SENDER")
+        Config._NOTIFICATION_SENDER_EMAIL = val
         return Config._NOTIFICATION_SENDER_EMAIL
+
+    @staticmethod
+    def get_admin_user_emails() -> typing.List[str]:
+        val_str = Config._get_required_envvar("ADMIN_USER_EMAILS")
+        val_list = [j.strip() for j in val_str.split(",")]
+        Config._ADMIN_USER_EMAILS_LIST = val_list
+        return Config._ADMIN_USER_EMAILS_LIST
+
+    @staticmethod
+    def get_auth0_claim():
+        backend = Config.get_auth_backend()
+        if backend == "auth0":
+            if Config._OIDC_AUTH0_TOKEN_CLAIM is None:
+                val = Config._get_required_envvar("OIDC_AUTH0_TOKEN_CLAIM")
+                Config._OIDC_AUTH0_TOKEN_CLAIM = val
+        else:
+            raise Exception("auth backend misconfigured: Config.get_auth0_claim() expected "
+                            f"\"auth0\" but got \"{backend}\"")
+
+        return Config._OIDC_AUTH0_TOKEN_CLAIM
 
     @staticmethod
     def debug_level() -> int:
@@ -434,6 +454,20 @@ class Config:
         if Config._AUTH_URL is None:
             Config._AUTH_URL = Config._get_required_envvar("AUTH_URL")
         return Config._AUTH_URL
+
+    @staticmethod
+    def get_auth_backend():
+        if Config._AUTH_BACKEND is None:
+            Config._AUTH_BACKEND = Config._get_required_envvar("AUTH_BACKEND")
+        return Config._AUTH_BACKEND
+
+    @staticmethod
+    def get_service_account_email():
+        if Config._SERVICE_ACCT_EMAIL is None:
+            ename = Config._get_required_envvar('DSS_GCP_SERVICE_ACCOUNT_NAME')
+            edomain = Config._get_required_envvar('DSS_AUTHORIZED_DOMAINS_TEST')
+            Config._SERVICE_ACCT_EMAIL = f"{ename}@{edomain}"
+        return Config._SERVICE_ACCT_EMAIL
 
     @staticmethod
     def get_ServiceAccountManager() -> security.DCPServiceAccountManager:

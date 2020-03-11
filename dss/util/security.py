@@ -2,17 +2,19 @@
 import base64
 import json
 import logging
-
 import functools
 import jwt
 import requests
 import typing
+import inspect
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import request
 
 from dss import Config
 from dss.error import DSSForbiddenException, DSSException
+from dss.util.auth import AuthWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +52,7 @@ def get_public_keys(openid_provider):
 
 
 def verify_jwt(token: str) -> typing.Optional[typing.Mapping]:
+    """Internal method used by Connexion to verify JWT tokens"""
     try:
         unverified_token = jwt.decode(token, verify=False)
     except jwt.DecodeError:
@@ -76,6 +79,7 @@ def verify_jwt(token: str) -> typing.Optional[typing.Mapping]:
 
 
 def get_token_email(token_info: typing.Mapping[str, typing.Any]) -> str:
+    """Get the email from a JWT token"""
     try:
         email_claim = Config.get_OIDC_email_claim()
         return token_info.get(email_claim) or token_info['email']
@@ -85,7 +89,8 @@ def get_token_email(token_info: typing.Mapping[str, typing.Any]) -> str:
 
 def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     """
-    Must be either `Config.get_openid_provider()` or in `Config.get_trusted_google_projects()`
+    Ensure that a JWT token contains a valid issuer under the "iss" key.
+    Must be either `Config.get_openid_provider()` or in `Config.get_trusted_google_projects()`.
     :param token: dict
     """
     issuer = token['iss']
@@ -98,34 +103,50 @@ def assert_authorized_issuer(token: typing.Mapping[str, typing.Any]) -> None:
     raise DSSForbiddenException()
 
 
-def assert_authorized_group(group: typing.List[str], token: dict) -> None:
-    if token.get(Config.get_OIDC_group_claim()) in group:
+def assert_authorized_group(groups: typing.List[str], token: dict) -> None:
+    """Assert that a JWT token contains the given group under the group claim key"""
+    group_claim = Config.get_OIDC_group_claim()
+    group = token.get(group_claim)
+    if group in groups:
         return
-    logger.info(f"User not in authorized group: {group}, {token}")
+    logger.info(f"User is not in authorized groups: user's group is {group}, authorized groups are {groups}")
     raise DSSForbiddenException()
 
 
-def authorized_group_required(groups: typing.List[str]):
+def assert_authorized_email(emails: typing.List[str], token: dict) -> None:
+    """Assert that a JWT token contains the given email under the email claim key"""
+    email_claim = Config.get_OIDC_email_claim()
+    email = token.get(email_claim)
+    if email in emails:
+        return
+    logger.info(f"User is not authorized: user's email is {email}, authorized emails are {emails}")
+    raise DSSForbiddenException()
+
+
+def assert_security(**decorator_kwargs):
+    # Note: we use 3 total layers of function wrappers here,
+    # not the usual 2 when wrapping functions, because the
+    # wrappers we are defining take *args and **kwargs.
     def real_decorator(func):
+        # Use of functools.wraps ensures that function names
+        # and docstrings are passed through correctly.
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            assert_authorized_group(groups, request.token_info)
+            # Wrapper function kwargs go into decorator kwargs
+            decorator_kwargs.update(kwargs)
+            # Wrapper function args get turned into kwargs, then go into decorator kwargs
+            sig = inspect.signature(wrapper)
+            for i, p in enumerate(list(sig._parameters)):
+                try:
+                    decorator_kwargs[p] = args[i]
+                except IndexError:
+                    # Corner case: unspecified positional arg, using default value
+                    pass
+            # Pass all args/kwargs to AuthWrapper
+            authz_handler = AuthWrapper()
+            authz_handler.security_flow(**decorator_kwargs)
             return func(*args, **kwargs)
 
         return wrapper
 
     return real_decorator
-
-
-def assert_authorized(principal: str,
-                      actions: typing.List[str],
-                      resources: typing.List[str]):
-    resp = session.post(f"{Config.get_authz_url()}/v1/policies/evaluate",
-                        headers=Config.get_ServiceAccountManager().get_authorization_header(),
-                        json={"action": actions,
-                              "resource": resources,
-                              "principal": principal})
-    resp.raise_for_status()
-    resp_json = resp.json()
-    if not resp_json.get('result'):
-        raise DSSForbiddenException(title=f"User is not authorized to access this resource:\n{resp_json}")
