@@ -19,7 +19,7 @@ from dss.config import SUBSCRIPTION_LIMIT
 logger = logging.getLogger(__name__)
 
 
-@security.assert_security(method='read', groups=['dbio', 'public'])
+@security.assert_security(method='group', groups=['dbio', 'public'])
 def get(uuid: str, replica: str):
     owner = security.get_token_email(request.token_info)
 

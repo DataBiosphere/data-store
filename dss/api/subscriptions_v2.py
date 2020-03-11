@@ -17,7 +17,7 @@ from dss.subscriptions_v2 import (SubscriptionData,
                                   count_subscriptions_for_owner)
 
 
-@security.assert_security(method='read', groups=['dbio', 'public'])
+@security.assert_security(method='group', groups=['dbio', 'public'])
 def get(uuid: str, replica: str):
     owner = security.get_token_email(request.token_info)
     subscription = get_subscription(Replica[replica], owner, uuid)
@@ -39,7 +39,7 @@ def find(replica: str):
     return {'subscriptions': subscriptions}, requests.codes.ok
 
 
-@security.assert_security(method='create', groups=['dbio', 'public'])
+@security.assert_security(method='group', groups=['dbio', 'public'])
 def put(json_request_body: dict, replica: str):
     owner = security.get_token_email(request.token_info)
     if count_subscriptions_for_owner(Replica[replica], owner) > SUBSCRIPTION_LIMIT:

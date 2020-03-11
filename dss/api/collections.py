@@ -87,7 +87,7 @@ def list_collections(per_page: int, start_at: int = 0):
 
 
 @dss_handler
-@security.assert_security(method='read', groups=['dbio'])
+@security.assert_security(method='group', groups=['dbio'])
 def get(uuid: str, replica: str, version: str = None):
     authenticated_user_email = security.get_token_email(request.token_info)
     collection_body = get_impl(uuid=uuid, replica=replica, version=version)
@@ -118,7 +118,7 @@ def put(json_request_body: dict, replica: str, uuid: str, version: str):
 
 
 @dss_handler
-@security.assert_security(method='update', groups=['dbio'])
+@security.assert_security(method='group', groups=['dbio'])
 def patch(uuid: str, json_request_body: dict, replica: str, version: str):
     authenticated_user_email = security.get_token_email(request.token_info)
 
