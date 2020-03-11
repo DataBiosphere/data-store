@@ -382,6 +382,32 @@ class TestFileApi(unittest.TestCase, TestAuthMixin, DSSUploadMixin, DSSAssertMix
         self._test_file_head(Replica.aws)
         self._test_file_head(Replica.gcp)
 
+    def test_drs_file_head(self):
+        # This is _test_file_head() copied and pasted and tweaked to test
+        # the DRS response.
+        file_uuid = "ce55fd51-7833-469b-be0b-5da88ebebfcd"
+        version = "2017-06-16T193604.240704Z"
+        headers = {'X-DSS-CREATOR-UID': '4321',
+                   'X-DSS-VERSION': version,
+                   'X-DSS-CONTENT-TYPE': 'text/plain',
+                   'X-DSS-SIZE': '8685',
+                   'X-DSS-CRC32C': 'e16e07b9',
+                   'X-DSS-S3-ETAG': '3b83ef96387f14655fc854ddc3c6bd57',
+                   'X-DSS-SHA1': '2b8b815229aa8a61e483fb4ba0588b8b6c491890',
+                   'X-DSS-SHA256': 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30',
+                   }
+        url = str(UrlBuilder()
+                  .set(path="/v1/ga4gh/drs/v1/objects/" + file_uuid))
+        with override_bucket_config(BucketConfig.TEST_FIXTURE):
+            resp_obj = self.assertGetResponse(
+                url,
+                [requests.codes.ok],
+                headers=get_auth_header()
+            )
+        self.assertEqual(int(headers['X-DSS-SIZE']), resp_obj.json['size'])
+        self.assertEqual(resp_obj.json['id'], file_uuid)
+        self.assertEqual(headers['X-DSS-CONTENT-TYPE'], resp_obj.json['mime_type'])
+
     def _test_file_head(self, replica: Replica):
         file_uuid = "ce55fd51-7833-469b-be0b-5da88ebebfcd"
         version = "2017-06-16T193604.240704Z"
