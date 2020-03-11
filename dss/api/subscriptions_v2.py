@@ -28,7 +28,7 @@ def get(uuid: str, replica: str):
     return subscription, requests.codes.ok
 
 
-@security.assert_security(method='read', groups=['dbio', 'public'])
+@security.assert_security(method='group', groups=['dbio', 'public'])
 def find(replica: str):
     owner = security.get_token_email(request.token_info)
     subscriptions = get_subscriptions_for_owner(Replica[replica], owner)
