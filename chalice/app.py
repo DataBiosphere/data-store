@@ -24,7 +24,7 @@ from dss.util.tracing import DSS_XRAY_TRACE
 from dss.api import health
 from dss.error import include_retry_after_header
 from dss.storage.identifiers import BUNDLES_URI_REGEX, FILES_URI_REGEX
-from dss.util import _deep_get
+from dss.util import _deep_get, UrlBuilder
 
 if DSS_XRAY_TRACE:  # noqa
     from aws_xray_sdk.core import xray_recorder
@@ -277,17 +277,18 @@ def get_chalice_app(flask_app) -> DSSChaliceApp:
                                 headers={"Content-Type": "application/json"},
                                 body=json.dumps(health_res, indent=4, sort_keys=True, default=str))
 
-    @app.route("/internal/echo", methods=["GET"])
+    @app.route("/internal/echo")
     @time_limited(app)
     def echo():
         return chalice.Response(status_code=200,
                                 headers={"Content-Type": "application/json"},
                                 body=app.current_request.json_body)
 
-    @app.route("/internal/login", methods=["GET"])
+    @app.route("/internal/login")
     @time_limited(app)
     def login():
         application_secret_file = os.environ["GOOGLE_APPLICATION_SECRETS"]
+
         with open(application_secret_file, 'r') as fh:
             application_secrets = json.loads(fh.read())
         query_params = dict(audience=Config.get_audience(),
@@ -296,11 +297,11 @@ def get_chalice_app(flask_app) -> DSSChaliceApp:
                             redirect_uri=f'https://{Config.get_api_domain_name()}/internal/echo',
                             response_type='code',
                             scope='openid email profile')
-
-        # create query params needed in dict.
-
-        # use auth URL to login
-
+        # URL builder here
+        auth_url = UrlBuilder(url=Config.get_authz_url()).set(path='authorize')
+        for k, v in query_params.items():
+            auth_url.add_query(query_name=k, query_value=v)
+        return chalice.Response(status_code=302, headers=dict(Location=str(auth_url)))
 
     @app.route("/internal/slow_request", methods=["GET"])
     @time_limited(app)
