@@ -113,6 +113,7 @@ class Config:
     BLOBSTORE_RETRIES: int = None
 
     _ALLOWED_GOOGLE_PROJECTS: typing.Optional[str] = None
+    _API_DOMAIN_NAME: typing.Optional[str] = None
     _CURRENT_CONFIG: BucketConfig = BucketConfig.ILLEGAL
     _NOTIFICATION_SENDER_EMAIL: typing.Optional[str] = None
     _ADMIN_USER_EMAILS_LIST: typing.Optional[typing.List[str]] = None
@@ -429,6 +430,12 @@ class Config:
             Config._TRUSTED_GOOGLE_PROJECTS = [x for x in Config.get_allowed_google_project_domains().split()
                                                if x.endswith("iam.gserviceaccount.com")]
         return Config._TRUSTED_GOOGLE_PROJECTS
+
+    @staticmethod
+    def get_api_domain_name():
+        if Config._API_DOMAIN_NAME is None:
+            Config._API_DOMAIN_NAME = Config._get_required_envvar('API_DOMAIN_NAME')
+        return Config._API_DOMAIN_NAME
 
     @staticmethod
     def get_audience():

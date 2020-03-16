@@ -3,7 +3,7 @@ import boto3
 import tempfile
 from urllib.parse import SplitResult, parse_qsl, urlencode, urlsplit, urlunsplit
 import typing
-from functools import lru_cache
+from functools import lru_cache, reduce
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from dss.storage.identifiers import VERSION_REGEX, UUID_REGEX, TOMBSTONE_SUFFIX
@@ -188,3 +188,8 @@ def multipart_parallel_upload(
         UploadId=mpu['UploadId'],
     )
     return parts
+
+
+def _deep_get(src_dict: dict, keys: list):
+    """Performs deep retrieval of value from dictionary object"""
+    return reduce(lambda d, key: d.get(key) if d else None, keys, src_dict)
