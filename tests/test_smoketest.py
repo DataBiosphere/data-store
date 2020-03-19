@@ -121,9 +121,10 @@ class Smoketest(BaseSmokeTest):
 
         with self.subTest(f'Testing FLAC Lookup for bundles'):
             keys = [f'bundles/{bundle_uuid}.{bundle_version}']
-            add_bundle = self.add_to_flac_table(keys=keys, groups=['service-account', 'dss_admin'])
+            self.add_to_flac_table(keys=keys, groups=['service-account', 'dss_admin'])
+            added_bundles = self.get_from_flac_table(keys=keys)
             self.cleanup_from_flac_table(keys=keys)
-            self.assertIs(True, add_bundle[0].get('inDatabase'))
+            self.assertIs(True, added_bundles[0].get('inDatabase'))
             for replica in self.replicas:
                 self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
 
