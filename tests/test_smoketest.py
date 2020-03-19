@@ -119,6 +119,14 @@ class Smoketest(BaseSmokeTest):
                               version=bundle_version):
                 self._test_replay_event(replica, bundle_uuid, bundle_version)
 
+        with self.subTest(f'Testing FLAC Lookup for bundles'):
+            keys = [f'bundles/{bundle_uuid}.{bundle_version}']
+            add_bundle = self.add_to_flac_table(keys=keys, groups=['service-account', 'dss_admin'])
+            self.cleanup_from_flac_table(keys=keys)
+            self.assertIs(True, add_bundle[0].get('inDatabase'))
+            for replica in self.replicas:
+                self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
+
         for replica in self.replicas:
             with self.subTest(f"{starting_replica.name}: Tombstone the bundle on replica {replica}"):
                 run_for_json(f"{self.venv_bin}dbio dss delete-bundle --uuid {bundle_uuid} --version {bundle_version} "
