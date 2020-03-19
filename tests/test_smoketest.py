@@ -127,6 +127,11 @@ class Smoketest(BaseSmokeTest):
             self.assertIs(True, added_bundles[0].get('inDatabase'))
             for replica in self.replicas:
                 self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
+            self.add_to_flac_table(keys=keys, groups=['deny'])
+            for replica in self.replicas:
+                self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
+                # This is going to cause a error in the subprocess, can this be caught because
+                # its expected? what would be the appropriate way to perform this?
 
         for replica in self.replicas:
             with self.subTest(f"{starting_replica.name}: Tombstone the bundle on replica {replica}"):
