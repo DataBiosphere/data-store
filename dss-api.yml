@@ -2408,6 +2408,7 @@ paths:
       summary: Get info about a `DrsObject`.
       description: >-
         Returns object metadata, and a list of access methods that can be used to fetch object bytes.
+        See https://ga4gh.github.io/data-repository-service-schemas/preview/release/drs-1.0.0/docs/
       responses:
         '200':
           description: The `DrsObject` was found successfully.
@@ -3131,7 +3132,7 @@ definitions:
           = f7a29a04
       access_methods:
         type: array
-        minItems: 0  # TODO(natanlao): should be 1
+        minItems: 1
         items:
           $ref: '#/definitions/AccessMethod'
         description: |-

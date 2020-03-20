@@ -17,7 +17,6 @@ def get_data_object(object_id: str):
     https://ga4gh.github.io/data-repository-service-schemas/preview/release/drs-1.0.0/docs/
     """
     # This only implements file access for now. As such, `expand` is ignored
-    # `access_url` is also not implemented, pending FLAC work
     version = request.args.get("version", None)
     replica = request.args.get("replica", "aws")
     req = get_helper(object_id, replica=Replica[replica], version=version)
@@ -39,7 +38,12 @@ def get_data_object(object_id: str):
             {'checksum': req.headers['x-dss-crc32c'],
              'type': 'crc32c'}
         ],
-        'access_methods': [],
+        'access_methods': [{
+            'type': 's3' if replica == 'aws' else 'gcp',
+            'access_url': {
+                'url': req.headers['Location']
+            }
+        }],
         'created_time': datetime_from_timestamp(req.headers['x-dss-version']),
         'updated_time': datetime_from_timestamp(req.headers['x-dss-version']),
         'id': object_id,
