@@ -31,6 +31,7 @@ full_auth = {"/search": ["post"],
              "/bundles/checkout/{checkout_job_id}": ["get"],
              "/events": ["get"],
              "/events/{uuid}": ["get"],
+             "/ga4gh/drs/v1/objects/{object_id}": ["get"],
             }
 
 
