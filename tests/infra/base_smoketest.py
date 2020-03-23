@@ -73,6 +73,7 @@ class BaseSmokeTest(unittest.TestCase):
         }
     ]
     notification_bucket = os.environ['DSS_S3_BUCKET_TEST']
+    scripts_dir = os.path.join(os.getenv('DSS_HOME'), 'scripts')
 
     @classmethod
     def setUpClass(cls):
@@ -237,6 +238,18 @@ class BaseSmokeTest(unittest.TestCase):
         list_of_subscriptions = get_response['subscriptions']
         list_of_subscription_uuids = [x['uuid'] for x in list_of_subscriptions if x['uuid']]
         self.assertIn(requested_subscription, list_of_subscription_uuids)
+
+    def add_to_flac_table(self, keys: list, groups: list):
+        """adds given uuid to the flac lookup table"""
+        return run_for_json(f'{self.scripts_dir}/dss-ops.py flac add --keys {" ".join(keys)}'
+                            f' --groups {" ".join(groups)}')
+
+    def cleanup_from_flac_table(self, keys: list):
+        self.addCleanup(run, f'{self.scripts_dir}/dss-ops.py flac remove --keys {" ".join(keys)}')
+
+    def get_from_flac_table(self, keys: list):
+        """adds given uuid to the flac lookup table"""
+        return run_for_json(f'{self.scripts_dir}/dss-ops.py flac get --keys {" ".join(keys)}')
 
     @staticmethod
     def _download_bundle(replica_name: str, bundle_uuid: str, workdir: str, venv_bin: str):

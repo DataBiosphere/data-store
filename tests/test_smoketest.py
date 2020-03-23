@@ -119,6 +119,20 @@ class Smoketest(BaseSmokeTest):
                               version=bundle_version):
                 self._test_replay_event(replica, bundle_uuid, bundle_version)
 
+        with self.subTest(f'Testing FLAC Lookup for bundles'):
+            keys = [f'bundles/{bundle_uuid}.{bundle_version}']
+            self.add_to_flac_table(keys=keys, groups=['service-account', 'dss_admin'])
+            added_bundles = self.get_from_flac_table(keys=keys)
+            self.cleanup_from_flac_table(keys=keys)
+            self.assertIs(True, added_bundles[0].get('inDatabase'))
+            for replica in self.replicas:
+                self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
+            self.add_to_flac_table(keys=keys, groups=['deny'])
+            for replica in self.replicas:
+                self._test_get_bundle(replica=replica, bundle_uuid=bundle_uuid)
+                # This is going to cause a error in the subprocess, can this be caught because
+                # its expected? what would be the appropriate way to perform this?
+
         for replica in self.replicas:
             with self.subTest(f"{starting_replica.name}: Tombstone the bundle on replica {replica}"):
                 run_for_json(f"{self.venv_bin}dbio dss delete-bundle --uuid {bundle_uuid} --version {bundle_version} "
