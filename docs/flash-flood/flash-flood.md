@@ -31,4 +31,6 @@ component that consumes flash-flood events to update its index.
 
   [some time]: https://github.com/HumanCellAtlas/data-store/issues/906
 
-Example flash-flood usage is given in [flash-flood.ipynb](flash-flood.ipynb).
+Example flash-flood usage is given in [flash-flood.ipynb].
+
+  [flash-flood.ipynb]: https://github.com/HumanCellAtlas/flash-flood/blob/master/intro.ipynb
