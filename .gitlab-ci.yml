@@ -24,6 +24,7 @@ before_script:
   - source ~/venv/bin/activate
   - pip install -r requirements-dev.txt
   - source environment
+  - echo $CI
   - if [[ -f "environment.$CI_COMMIT_REF_NAME" ]]; then
   -   source environment.$CI_COMMIT_REF_NAME
   - fi

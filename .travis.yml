@@ -19,6 +19,7 @@ addons:
     - gettext
 
 install:
+- echo $CI
 - pip install -r requirements-dev.txt
 - wget -q ${ES_DOWNLOAD_URL}
 - tar -xzf elasticsearch-${ES_VERSION}.tar.gz
