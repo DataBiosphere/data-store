@@ -105,12 +105,12 @@ def get_helper(uuid: str, replica: Replica, version: str = None, token: str = No
                 if content_disposition:
                     # can tell a browser to treat the response link as a download rather than open a new tab
                     response = redirect(handle.generate_presigned_GET_url(
-                                        replica.checkout_bucket,
+                                        replica.bucket,
                                         get_dst_key(blob_path),
                                         response_content_disposition=content_disposition))
                 else:
                     response = redirect(handle.generate_presigned_GET_url(
-                                        replica.checkout_bucket,
+                                        replica.bucket,
                                         get_dst_key(blob_path)))
         else:
             with tracing.Subsegment('make_retry'):

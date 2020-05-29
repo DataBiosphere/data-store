@@ -110,7 +110,7 @@ def get(
         elif presignedurls:
             handle = Config.get_blobstore_handle(_replica)
             file_version['url'] = handle.generate_presigned_GET_url(
-                _replica.checkout_bucket,
+                _replica.bucket,
                 "{}/{}".format(
                     get_dst_bundle_prefix(uuid, bundle_metadata[BundleMetadata.VERSION]),
                     _file[BundleFileMetadata.NAME],
